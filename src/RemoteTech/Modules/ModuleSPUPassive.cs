@@ -13,12 +13,22 @@ namespace RemoteTech.Modules
         public string VesselName
         {
             get { return vessel != null ? vessel.vesselName : "vessel-null"; }
-            set { if(vessel != null) vessel.vesselName = value; }
+            set
+            {
+                if (vessel != null)
+                    vessel.vesselName = value;
+            }
         }
         public bool VesselLoaded => vessel != null && vessel.loaded;
         public Guid VesselId { get; private set; }
-        public Vector3 Position { get { return vessel != null ? vessel.GetWorldPos3D() : new Vector3d(); } }
-        public CelestialBody Body { get { return vessel != null ? vessel.mainBody : null; } }
+        public Vector3 Position
+        {
+            get { return vessel != null ? vessel.GetWorldPos3D() : new Vector3d(); }
+        }
+        public CelestialBody Body
+        {
+            get { return vessel != null ? vessel.mainBody : null; }
+        }
         public bool Visible => MapViewFiltering.CheckAgainstFilter(vessel);
         public bool Powered => vessel != null && vessel.IsControllable;
         public bool IsCommandStation => false;
@@ -27,9 +37,14 @@ namespace RemoteTech.Modules
         public bool IsMaster => false;
         public bool CanRelaySignal => true;
 
-        [KSPField(isPersistant = true)] public bool IsRTPowered;
-        [KSPField(isPersistant = true)] public bool IsRTSignalProcessor = true;
-        [KSPField(isPersistant = true)] public bool IsRTCommandStation = false;
+        [KSPField(isPersistant = true)]
+        public bool IsRTPowered;
+
+        [KSPField(isPersistant = true)]
+        public bool IsRTSignalProcessor = true;
+
+        [KSPField(isPersistant = true)]
+        public bool IsRTCommandStation = false;
 
         public override void OnStart(StartState state)
         {
@@ -38,10 +53,10 @@ namespace RemoteTech.Modules
                 GameEvents.onVesselWasModified.Add(OnVesselModified);
                 GameEvents.onPartUndock.Add(OnPartUndock);
                 VesselId = vessel.id;
-                if(RTCore.Instance != null)
+                if (RTCore.Instance != null)
                 {
                     RTCore.Instance.Satellites.Register(vessel, this);
-                } 
+                }
             }
         }
 
@@ -75,7 +90,7 @@ namespace RemoteTech.Modules
             if (RTCore.Instance != null && vessel != null && VesselId != vessel.id)
             {
                 RTCore.Instance.Satellites.Unregister(VesselId, this);
-                VesselId = vessel.id; 
+                VesselId = vessel.id;
                 RTCore.Instance.Satellites.Register(vessel, this);
             }
         }

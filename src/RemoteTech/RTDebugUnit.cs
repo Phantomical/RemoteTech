@@ -11,14 +11,17 @@ namespace RemoteTech
 
         public void Start()
         {
-            #if DEBUG
+#if DEBUG
             debugWindow = new UI.DebugWindow();
-            #endif
+#endif
         }
 
         public void Update()
         {
-            if ((Input.GetKeyDown(KeyCode.F11) || Input.GetKeyDown(KeyCode.F12)) && (HighLogic.LoadedSceneIsFlight || HighLogic.LoadedSceneHasPlanetarium))
+            if (
+                (Input.GetKeyDown(KeyCode.F11) || Input.GetKeyDown(KeyCode.F12))
+                && (HighLogic.LoadedSceneIsFlight || HighLogic.LoadedSceneHasPlanetarium)
+            )
             {
                 if (Input.GetKeyDown(KeyCode.F11))
                     Dump();
@@ -39,12 +42,15 @@ namespace RemoteTech
             dump.AddRange(DumpConnectionTests());
             dump.Add(Environment.NewLine);
 
-            System.IO.File.WriteAllText(@"./rt_dump.txt", string.Join(Environment.NewLine, dump.ToArray()));
+            System.IO.File.WriteAllText(
+                @"./rt_dump.txt",
+                string.Join(Environment.NewLine, dump.ToArray())
+            );
         }
-        
+
         public string[] DumpSatellites()
         {
-            var data = new List<string> {"NetworkManager contents: "};
+            var data = new List<string> { "NetworkManager contents: " };
             var i = 0;
             foreach (var satellite in RTCore.Instance.Network)
             {
@@ -56,7 +62,7 @@ namespace RemoteTech
 
         public string[] DumpAntennas()
         {
-            var data = new List<string> {"AntennaManager contents: "};
+            var data = new List<string> { "AntennaManager contents: " };
             var i = 0;
             foreach (var antenna in RTCore.Instance.Antennas)
             {
@@ -68,7 +74,7 @@ namespace RemoteTech
 
         public string[] DumpEdges()
         {
-            var data = new List<string> {"NetworkManager.Graph contents: "};
+            var data = new List<string> { "NetworkManager.Graph contents: " };
             var i = 0;
             foreach (var edge in RTCore.Instance.Network.Graph)
             {
@@ -85,14 +91,15 @@ namespace RemoteTech
 
         public string[] DumpConnectionTests()
         {
-            var data = new List<string> {"Forced connection checks: "};
+            var data = new List<string> { "Forced connection checks: " };
             var i = 0;
             foreach (var sat1 in RTCore.Instance.Network)
             {
                 var j = 0;
                 foreach (var sat2 in RTCore.Instance.Network)
                 {
-                    if (sat1 == sat2) continue;
+                    if (sat1 == sat2)
+                        continue;
                     data.Add($"    {i} -> {j}: {NetworkManager.GetLink(sat1, sat2)}");
                     j++;
                 }

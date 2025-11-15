@@ -5,8 +5,11 @@ namespace RemoteTech.FlightComputer.Commands
     public class AxisGroupCommand : AbstractCommand
     {
 #if !KSP131
-        [Persistent] public KSPAxisGroup AxisGroup;
-        [Persistent] public float AxisValue;
+        [Persistent]
+        public KSPAxisGroup AxisGroup;
+
+        [Persistent]
+        public float AxisValue;
 #endif
 
         public override string Description

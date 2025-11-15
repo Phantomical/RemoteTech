@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using KSP.Localization;
 using RemoteTech.FlightComputer.Commands;
 using RemoteTech.Modules;
 using RemoteTech.SimpleTypes;
 using RemoteTech.UI;
-using KSP.Localization;
+using UnityEngine;
 
 namespace RemoteTech.FlightComputer
 {
@@ -20,13 +20,15 @@ namespace RemoteTech.FlightComputer
         private ConfigNode _fcLoadedConfigs;
 
         /// <summary>List of active commands in the flight computer.</summary>
-        private readonly SortedDictionary<int, ICommand> _activeCommands = new SortedDictionary<int, ICommand>();
+        private readonly SortedDictionary<int, ICommand> _activeCommands =
+            new SortedDictionary<int, ICommand>();
 
         /// <summary>List of commands queued in the flight computer.</summary>
         private readonly List<ICommand> _commandQueue = new List<ICommand>();
-        
+
         /// <summary>Flight control queue: this is a priority queue used to delay <see cref="FlightCtrlState"/>.</summary>
-        private readonly PriorityQueue<DelayedFlightCtrlState> _flightCtrlQueue = new PriorityQueue<DelayedFlightCtrlState>();
+        private readonly PriorityQueue<DelayedFlightCtrlState> _flightCtrlQueue =
+            new PriorityQueue<DelayedFlightCtrlState>();
 
         /// <summary>The window of the flight computer.</summary>
         private FlightComputerWindow _flightComputerWindow;
@@ -37,12 +39,16 @@ namespace RemoteTech.FlightComputer
         {
             /// <summary>Normal state.</summary>
             Normal = 0,
+
             /// <summary>The flight computer (and its vessel) are packed: vessels are only packed when they come within about 300m of the active vessel.</summary>
             Packed = 2,
+
             /// <summary>The flight computer (and its vessel) are out of power.</summary>
             OutOfPower = 4,
+
             /// <summary>The flight computer (and its vessel) have no connection.</summary>
             NoConnection = 8,
+
             /// <summary>The flight computer signal processor is not the vessel main signal processor (see <see cref="ModuleSPU.IsMaster"/>).</summary>
             NotMaster = 16,
         }
@@ -54,7 +60,8 @@ namespace RemoteTech.FlightComputer
             {
                 var satellite = RTCore.Instance.Network[SignalProcessor.VesselId];
                 var connection = RTCore.Instance.Network[satellite];
-                return (satellite != null && satellite.HasLocalControl) || (SignalProcessor.Powered && connection.Any());
+                return (satellite != null && satellite.HasLocalControl)
+                    || (SignalProcessor.Powered && connection.Any());
             }
         }
 
@@ -81,55 +88,74 @@ namespace RemoteTech.FlightComputer
                 var satellite = RTCore.Instance.Network[SignalProcessor.VesselId];
                 var connection = RTCore.Instance.Network[satellite];
                 var status = State.Normal;
-                if (!SignalProcessor.Powered) status |= State.OutOfPower;
-                if (!SignalProcessor.IsMaster) status |= State.NotMaster;
-                if (!connection.Any()) status |= State.NoConnection;
-                if (Vessel.packed) status |= State.Packed;
+                if (!SignalProcessor.Powered)
+                    status |= State.OutOfPower;
+                if (!SignalProcessor.IsMaster)
+                    status |= State.NotMaster;
+                if (!connection.Any())
+                    status |= State.NoConnection;
+                if (Vessel.packed)
+                    status |= State.Packed;
                 return status;
             }
         }
 
         /// <summary>Returns true to keep the throttle on the current position without a connection, otherwise false.</summary>
         public bool KeepThrottleNoConnect => !RTSettings.Instance.ThrottleZeroOnNoConnection;
+
         /// <summary>Returns true to lock the throttle on the current position without a connection, otherwise false.</summary>
         public bool LockedThrottleNoConnect = false;
+
         /// <summary>Returns the last known position of throttle prior to connection loss.</summary>
         public float LockedThrottlePositionNoConnect = 0f;
 
         /// <summary>Returns true to set the time wrap factor to 1 upon a connection reestablished, otherwise false</summary>
         public bool StopTimeWrapOnReconnect => RTSettings.Instance.StopTimeWrapOnReConnection;
+
         /// <summary>Returns true to indicate whether a connection loss occurs</summary>
         private bool TimeWrapConnectionLoss = false;
 
         /// <summary>Gets or sets the total delay which is the usual light speed delay + any manual delay.</summary>
         public double TotalDelay { get; set; }
+
         /// <summary>The target (<see cref="TargetCommand.Target"/>) of a <see cref="TargetCommand"/>.</summary>
         public ITargetable DelayedTarget { get; set; }
+
         /// <summary>The last <see cref="TargetCommand"/> used by the Flight Computer.</summary>
         public TargetCommand LastTarget;
+
         /// <summary>The vessel owning this flight computer.</summary>
         public Vessel Vessel { get; private set; }
+
         /// <summary>The signal processor (<see cref="ISignalProcessor"/>; <seealso cref="ModuleSPU"/>) used by this flight computer.</summary>
         public ISignalProcessor SignalProcessor { get; }
+
         /// <summary>List of autopilots for this flight computer. Used by external mods to add their own autopilots (<see cref="RemoteTech.API"/> class).</summary>
         public List<Action<FlightCtrlState>> SanctionedPilots { get; }
+
         /// <summary>List of commands that are currently active (not queued).</summary>
         public IEnumerable<ICommand> ActiveCommands => _activeCommands.Values;
+
         /// <summary>List of queued commands in the flight computer.</summary>
         public IEnumerable<ICommand> QueuedCommands => _commandQueue;
 
         /// <summary>Action triggered if the active command is aborted.</summary>
         public Action OnActiveCommandAbort;
+
         /// <summary>Action triggered if a new command popped to an active command.</summary>
         public Action OnNewCommandPop;
+
         /// <summary>Get the active Flight mode as an (<see cref="AttitudeCommand"/>).</summary>
         public AttitudeCommand CurrentFlightMode => _activeCommands[0] as AttitudeCommand;
 
-
         /// <summary>Proportional Integral Derivative vessel controller.</summary>
         public PIDController PIDController;
-        public static double PIDKp = 2.0, PIDKi = 0.8, PIDKd = 1.0;
-        public static readonly double RoverPIDKp = 1.0, RoverPIDKi = 0.0, RoverPIDKd = 0.0;
+        public static double PIDKp = 2.0,
+            PIDKi = 0.8,
+            PIDKd = 1.0;
+        public static readonly double RoverPIDKp = 1.0,
+            RoverPIDKi = 0.0,
+            RoverPIDKd = 0.0;
 
         /// <summary>The window of the flight computer.</summary>
         public FlightComputerWindow Window
@@ -171,10 +197,21 @@ namespace RemoteTech.FlightComputer
             StockAutopilotCommand.UIreference = GameObject.FindObjectOfType<VesselAutopilotUI>();
             if (StockAutopilotCommand.UIreference != null)
             {
-                for (var index = 0; index < StockAutopilotCommand.UIreference.modeButtons.Length; index++)
+                for (
+                    var index = 0;
+                    index < StockAutopilotCommand.UIreference.modeButtons.Length;
+                    index++
+                )
                 {
                     var buttonIndex = index; // prevent compiler optimisation from assigning static final index value
-                    StockAutopilotCommand.UIreference.modeButtons[index].onClick.AddListener(delegate { StockAutopilotCommand.AutopilotButtonClick(buttonIndex, this); });
+                    StockAutopilotCommand
+                        .UIreference.modeButtons[index]
+                        .onClick.AddListener(
+                            delegate
+                            {
+                                StockAutopilotCommand.AutopilotButtonClick(buttonIndex, this);
+                            }
+                        );
                     // bad idea to use RemoveAllListeners() since no easy way to re-add the original stock listener to onClick
                 }
             }
@@ -185,7 +222,7 @@ namespace RemoteTech.FlightComputer
         private void OnSceneSwitchRequested(GameEvents.FromToAction<GameScenes, GameScenes> data)
         {
             if (data.to != GameScenes.FLIGHT)
-                Dispose();            
+                Dispose();
         }
 
         /// <summary>Called when there's a vessel switch, switching from `fromVessel` to `toVessel`.</summary>
@@ -193,9 +230,14 @@ namespace RemoteTech.FlightComputer
         /// <param name="toVessel">The vessel we're switching to.</param>
         private void OnVesselSwitching(Vessel fromVessel, Vessel toVessel)
         {
-            RTLog.Notify("OnVesselSwitching - from: " + (fromVessel != null ? fromVessel.vesselName : "N/A") + " to: " + toVessel.vesselName);            
-            
-            if(fromVessel != null)
+            RTLog.Notify(
+                "OnVesselSwitching - from: "
+                    + (fromVessel != null ? fromVessel.vesselName : "N/A")
+                    + " to: "
+                    + toVessel.vesselName
+            );
+
+            if (fromVessel != null)
             {
                 // remove flight code controls.
                 fromVessel.OnFlyByWire -= OnFlyByWirePre;
@@ -209,7 +251,9 @@ namespace RemoteTech.FlightComputer
         /// <param name="vessel">The **new** vessel we are changing to.</param>
         public void OnVesselChange(Vessel vessel)
         {
-            RTLog.Notify("OnVesselChange - new vessel: " + (vessel != null ? vessel.vesselName : "N/A"));
+            RTLog.Notify(
+                "OnVesselChange - new vessel: " + (vessel != null ? vessel.vesselName : "N/A")
+            );
 
             _flightComputerWindow?.Hide();
         }
@@ -235,10 +279,21 @@ namespace RemoteTech.FlightComputer
             // Remove RT listeners from KSP Autopilot
             if (StockAutopilotCommand.UIreference != null)
             {
-                for (var index = 0; index < StockAutopilotCommand.UIreference.modeButtons.Length; index++)
+                for (
+                    var index = 0;
+                    index < StockAutopilotCommand.UIreference.modeButtons.Length;
+                    index++
+                )
                 {
                     var buttonIndex = index; // prevent compiler optimisation from assigning static final index value
-                    StockAutopilotCommand.UIreference.modeButtons[index].onClick.RemoveListener(delegate { StockAutopilotCommand.AutopilotButtonClick(buttonIndex, this); });
+                    StockAutopilotCommand
+                        .UIreference.modeButtons[index]
+                        .onClick.RemoveListener(
+                            delegate
+                            {
+                                StockAutopilotCommand.AutopilotButtonClick(buttonIndex, this);
+                            }
+                        );
                 }
                 StockAutopilotCommand.UIreference = null;
             }
@@ -260,11 +315,18 @@ namespace RemoteTech.FlightComputer
         /// <param name="ignoreControl">If true the command is not enqueued.</param>
         /// <param name="ignoreDelay">If true, the command is executed immediately, otherwise the light speed delay is applied.</param>
         /// <param name="ignoreExtra">If true, the command is executed without manual delay (if any). The normal light speed delay still applies.</param>
-        public void Enqueue(ICommand cmd, bool ignoreControl = false, bool ignoreDelay = false, bool ignoreExtra = false)
+        public void Enqueue(
+            ICommand cmd,
+            bool ignoreControl = false,
+            bool ignoreDelay = false,
+            bool ignoreExtra = false
+        )
         {
-            if (!InputAllowed && !ignoreControl) return;
+            if (!InputAllowed && !ignoreControl)
+                return;
 
-            if (!ignoreDelay) cmd.TimeStamp += Delay;
+            if (!ignoreDelay)
+                cmd.TimeStamp += Delay;
             if (!ignoreExtra)
             {
                 cmd.ExtraDelay += Math.Max(0, TotalDelay - Delay);
@@ -285,15 +347,18 @@ namespace RemoteTech.FlightComputer
         public void Remove(ICommand cmd)
         {
             _commandQueue.Remove(cmd);
-            if (_activeCommands.ContainsValue(cmd)) _activeCommands.Remove(cmd.Priority);
+            if (_activeCommands.ContainsValue(cmd))
+                _activeCommands.Remove(cmd.Priority);
         }
 
         /// <summary>Called by the <see cref="ModuleSPU.Update"/> method during the Update() "Game Logic" engine phase.</summary>
         /// <remarks>This checks if there are any commands that can be removed from the FC queue if their delay has elapsed.</remarks>
         public void OnUpdate()
         {
-            if (RTCore.Instance == null) return;
-            if (!SignalProcessor.IsMaster) return;
+            if (RTCore.Instance == null)
+                return;
+            if (!SignalProcessor.IsMaster)
+                return;
             PopCommand();
             ExecuteConnectionStatusActions();
         }
@@ -301,7 +366,8 @@ namespace RemoteTech.FlightComputer
         /// <summary>Called by the <see cref="ModuleSPU.OnFixedUpdate"/> method during the "Physics" engine phase.</summary>
         public void OnFixedUpdate()
         {
-            if (RTCore.Instance == null) return;
+            if (RTCore.Instance == null)
+                return;
             if (Vessel == null)
             {
                 Vessel = SignalProcessor.Vessel;
@@ -338,7 +404,10 @@ namespace RemoteTech.FlightComputer
             PIDController.OnFixedUpdate();
 
             // Send updates for Target
-            if (Vessel == FlightGlobals.ActiveVessel && FlightGlobals.fetch.VesselTarget != LastTarget.Target)
+            if (
+                Vessel == FlightGlobals.ActiveVessel
+                && FlightGlobals.fetch.VesselTarget != LastTarget.Target
+            )
             {
                 Enqueue(TargetCommand.WithTarget(FlightGlobals.fetch.VesselTarget));
                 UpdateLastTarget();
@@ -353,8 +422,10 @@ namespace RemoteTech.FlightComputer
             {
                 LastTarget = _commandQueue[lastTargetIndex] as TargetCommand;
             }
-            else if (_activeCommands.ContainsKey(LastTarget.Priority) &&
-                     _activeCommands[LastTarget.Priority] is TargetCommand)
+            else if (
+                _activeCommands.ContainsKey(LastTarget.Priority)
+                && _activeCommands[LastTarget.Priority] is TargetCommand
+            )
             {
                 LastTarget = _activeCommands[LastTarget.Priority] as TargetCommand;
             }
@@ -371,7 +442,10 @@ namespace RemoteTech.FlightComputer
             var dfs = new DelayedFlightCtrlState(fs);
             dfs.TimeStamp += Delay;
 
-            if (StockAutopilotCommand.IsAutoPilotEngaged(this) && RTSettings.Instance.EnableSignalDelay) // remove the delay if the autopilot is engaged
+            if (
+                StockAutopilotCommand.IsAutoPilotEngaged(this)
+                && RTSettings.Instance.EnableSignalDelay
+            ) // remove the delay if the autopilot is engaged
             {
                 var autopilotfs = new DelayedFlightCtrlState(fs); // make copy of FS and apply no delay
 
@@ -385,7 +459,7 @@ namespace RemoteTech.FlightComputer
 
                 //nullify throttle
                 autopilotfs.State.mainThrottle = 0f;
-                
+
                 _flightCtrlQueue.Enqueue(autopilotfs);
             }
 
@@ -403,7 +477,9 @@ namespace RemoteTech.FlightComputer
             //however, it is lethal RO issue as zero throttle even once will count against engine's limited number of ignitions
             //Workaround: just pipe FCS throttle to delayed state until delay is large enough to revert back to normal RT operation
 
-            while (_flightCtrlQueue.Count > 0 && _flightCtrlQueue.Peek().TimeStamp <= RTUtil.GameTime)
+            while (
+                _flightCtrlQueue.Count > 0 && _flightCtrlQueue.Peek().TimeStamp <= RTUtil.GameTime
+            )
             {
                 delayed = _flightCtrlQueue.Dequeue().State;
                 maxThrottle = Math.Max(maxThrottle, delayed.mainThrottle);
@@ -434,10 +510,22 @@ namespace RemoteTech.FlightComputer
             if (RTSettings.Instance.ThrottleTimeWarp && TimeWarp.CurrentRate > 4.0f)
             {
                 var time = TimeWarp.deltaTime;
-                foreach (var dc in _commandQueue.TakeWhile(c => c.TimeStamp <= RTUtil.GameTime + (2 * time + 1.0)))
+                foreach (
+                    var dc in _commandQueue.TakeWhile(c =>
+                        c.TimeStamp <= RTUtil.GameTime + (2 * time + 1.0)
+                    )
+                )
                 {
-                    var message = new ScreenMessage(Localizer.Format("#RT_FC_msg1"), 4.0f, ScreenMessageStyle.UPPER_LEFT);//"[Flight Computer]: Throttling back time warp..."
-                    while ((2 * TimeWarp.deltaTime + 1.0) > (Math.Max(dc.TimeStamp - RTUtil.GameTime, 0) + dc.ExtraDelay) && TimeWarp.CurrentRate > 1.0f)//
+                    var message = new ScreenMessage(
+                        Localizer.Format("#RT_FC_msg1"),
+                        4.0f,
+                        ScreenMessageStyle.UPPER_LEFT
+                    ); //"[Flight Computer]: Throttling back time warp..."
+                    while (
+                        (2 * TimeWarp.deltaTime + 1.0)
+                            > (Math.Max(dc.TimeStamp - RTUtil.GameTime, 0) + dc.ExtraDelay)
+                        && TimeWarp.CurrentRate > 1.0f
+                    ) //
                     {
                         TimeWarp.SetRate(TimeWarp.CurrentRateIndex - 1, true);
                         ScreenMessages.PostScreenMessage(message);
@@ -448,7 +536,7 @@ namespace RemoteTech.FlightComputer
             // Proceed the extraDelay for every command where the normal delay is over
             foreach (var dc in _commandQueue.Where(s => s.Delay == 0).ToList())
             {
-                // Use time decrement instead of comparing scheduled time, in case we later want to 
+                // Use time decrement instead of comparing scheduled time, in case we later want to
                 //      reinstate event clocks stopping under certain conditions
                 if (dc.ExtraDelay > 0)
                 {
@@ -478,9 +566,10 @@ namespace RemoteTech.FlightComputer
                     }
                     else
                     {
-                        string message = Localizer.Format("#RT_FC_msg2", dc.ShortName);//$"[Flight Computer]: Out of power, cannot run \"{}\" on schedule."
-                        ScreenMessages.PostScreenMessage(new ScreenMessage(
-                            message, 4.0f, ScreenMessageStyle.UPPER_LEFT));
+                        string message = Localizer.Format("#RT_FC_msg2", dc.ShortName); //$"[Flight Computer]: Out of power, cannot run \"{}\" on schedule."
+                        ScreenMessages.PostScreenMessage(
+                            new ScreenMessage(message, 4.0f, ScreenMessageStyle.UPPER_LEFT)
+                        );
                     }
 
                     _commandQueue.Remove(dc);
@@ -493,7 +582,8 @@ namespace RemoteTech.FlightComputer
         /// <param name="fcs">The input flight control state.</param>
         private void OnFlyByWirePre(FlightCtrlState fcs)
         {
-            if (!SignalProcessor.IsMaster) return;
+            if (!SignalProcessor.IsMaster)
+                return;
             var satellite = RTCore.Instance.Satellites[SignalProcessor.VesselId];
 
             if (Vessel == FlightGlobals.ActiveVessel && InputAllowed && !satellite.HasLocalControl)
@@ -524,7 +614,8 @@ namespace RemoteTech.FlightComputer
         /// <param name="fcs">The input flight control state.</param>
         private void OnFlyByWirePost(FlightCtrlState fcs)
         {
-            if (!SignalProcessor.IsMaster) return;
+            if (!SignalProcessor.IsMaster)
+                return;
 
             if (!InputAllowed && KeepThrottleNoConnect == false)
             {
@@ -535,7 +626,8 @@ namespace RemoteTech.FlightComputer
             {
                 foreach (var dc in _activeCommands.Values.ToList())
                 {
-                    if (dc.Execute(this, fcs)) _activeCommands.Remove(dc.Priority);
+                    if (dc.Execute(this, fcs))
+                        _activeCommands.Remove(dc.Priority);
                 }
             }
 
@@ -548,7 +640,8 @@ namespace RemoteTech.FlightComputer
         /// <summary>Orders the command queue to be chronological.</summary>
         public void OrderCommandList()
         {
-            if (_commandQueue.Count <= 0) return;
+            if (_commandQueue.Count <= 0)
+                return;
 
             var backupList = _commandQueue;
             // sort the backup queue
@@ -631,7 +724,7 @@ namespace RemoteTech.FlightComputer
                     {
                         if (cmd is ManeuverCommand)
                         {
-                            RTUtil.ScreenMessage(Localizer.Format("#RT_FC_msg3"));//"A maneuver burn is required"
+                            RTUtil.ScreenMessage(Localizer.Format("#RT_FC_msg3")); //"A maneuver burn is required"
                             continue;
                         }
 
@@ -639,14 +732,14 @@ namespace RemoteTech.FlightComputer
                         // and set the new extra delay based on the current time
                         if (cmd.ExtraDelay > 0)
                         {
-                            cmd.ExtraDelay = cmd.TimeStamp  + cmd.ExtraDelay - RTUtil.GameTime;
+                            cmd.ExtraDelay = cmd.TimeStamp + cmd.ExtraDelay - RTUtil.GameTime;
 
                             // Are we ready to handle the command ?
                             if (cmd.ExtraDelay <= 0)
                             {
                                 if (cmd is BurnCommand)
                                 {
-                                    RTUtil.ScreenMessage(Localizer.Format("#RT_FC_msg4"));//"A burn command is required"
+                                    RTUtil.ScreenMessage(Localizer.Format("#RT_FC_msg4")); //"A burn command is required"
                                     continue;
                                 }
 
@@ -718,7 +811,9 @@ namespace RemoteTech.FlightComputer
                 return false;
 
             // look for ManeuverCommands
-            var maneuverFound = _commandQueue.FirstOrDefault(command => (command is ManeuverCommand && ((ManeuverCommand)command).Node == node));
+            var maneuverFound = _commandQueue.FirstOrDefault(command =>
+                (command is ManeuverCommand && ((ManeuverCommand)command).Node == node)
+            );
             return maneuverFound != null;
         }
 
@@ -726,13 +821,14 @@ namespace RemoteTech.FlightComputer
         /// <param name="node">Node to cancel from the queue</param>
         public void RemoveManeuverCommandByNode(ManeuverNode node)
         {
-            if (_commandQueue.Count <= 0) return;
+            if (_commandQueue.Count <= 0)
+                return;
 
             // look for ManeuverCommands
-            for(var i = _commandQueue.Count - 1; i>= 0; i--)
+            for (var i = _commandQueue.Count - 1; i >= 0; i--)
             {
                 var maneuverCmd = _commandQueue[i] as ManeuverCommand;
-                if(maneuverCmd != null && maneuverCmd.Node == node)
+                if (maneuverCmd != null && maneuverCmd.Node == node)
                 {
                     // remove Node
                     Enqueue(CancelCommand.WithCommand(maneuverCmd));
@@ -759,7 +855,11 @@ namespace RemoteTech.FlightComputer
                     {
                         TimeWrapConnectionLoss = false;
 
-                        var message = new ScreenMessage(Localizer.Format("#RT_FC_msg1"), 4.0f, ScreenMessageStyle.UPPER_LEFT);//"[Flight Computer]: Throttling back time warp..."
+                        var message = new ScreenMessage(
+                            Localizer.Format("#RT_FC_msg1"),
+                            4.0f,
+                            ScreenMessageStyle.UPPER_LEFT
+                        ); //"[Flight Computer]: Throttling back time warp..."
                         TimeWarp.SetRate(0, false); //gentle stopping
                         ScreenMessages.PostScreenMessage(message);
                     }

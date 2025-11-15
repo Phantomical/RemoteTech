@@ -1,6 +1,5 @@
 ﻿using System;
 
-
 namespace RemoteTech.AddOns
 {
     /// <summary> Simple class to detect if Kerbalism is loaded </summary>
@@ -28,4 +27,3 @@ namespace RemoteTech.AddOns
         }
     }
 }
-

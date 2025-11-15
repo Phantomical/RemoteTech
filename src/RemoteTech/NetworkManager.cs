@@ -2,11 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using KSP.Localization;
 using RemoteTech.Modules;
 using RemoteTech.RangeModel;
 using RemoteTech.SimpleTypes;
 using UnityEngine;
-using KSP.Localization;
 
 namespace RemoteTech
 {
@@ -23,7 +23,10 @@ namespace RemoteTech
         public Dictionary<Guid, ISatellite> GroundStations { get; private set; }
         public Dictionary<Guid, List<NetworkLink<ISatellite>>> Graph { get; private set; }
 
-        public int Count { get { return RTCore.Instance.Satellites.Count + GroundStations.Count; } }
+        public int Count
+        {
+            get { return RTCore.Instance.Satellites.Count + GroundStations.Count; }
+        }
 
         public static Guid ActiveVesselGuid = new Guid(RTSettings.Instance.ActiveVesselGuid);
 
@@ -31,12 +34,20 @@ namespace RemoteTech
         {
             get
             {
-                Vessel activeVessel = (FlightGlobals.ActiveVessel == null && HighLogic.LoadedScene == GameScenes.TRACKSTATION 
-                    ? MapView.MapCamera.target.vessel : FlightGlobals.ActiveVessel);
+                Vessel activeVessel = (
+                    FlightGlobals.ActiveVessel == null
+                    && HighLogic.LoadedScene == GameScenes.TRACKSTATION
+                        ? MapView.MapCamera.target.vessel
+                        : FlightGlobals.ActiveVessel
+                );
 
                 ISatellite vesselSatellite = RTCore.Instance.Satellites[guid];
-                ISatellite activeSatellite = (guid == ActiveVesselGuid ? RTCore.Instance.Satellites[activeVessel] : null);
-                ISatellite groundSatellite = (GroundStations.ContainsKey(guid) ? GroundStations[guid] : null);
+                ISatellite activeSatellite = (
+                    guid == ActiveVesselGuid ? RTCore.Instance.Satellites[activeVessel] : null
+                );
+                ISatellite groundSatellite = (
+                    GroundStations.ContainsKey(guid) ? GroundStations[guid] : null
+                );
 
                 return vesselSatellite ?? activeSatellite ?? groundSatellite;
             }
@@ -46,8 +57,11 @@ namespace RemoteTech
         {
             get
             {
-                if (sat == null) return new List<NetworkRoute<ISatellite>>();
-                return mConnectionCache.ContainsKey(sat) ? mConnectionCache[sat] : new List<NetworkRoute<ISatellite>>();
+                if (sat == null)
+                    return new List<NetworkRoute<ISatellite>>();
+                return mConnectionCache.ContainsKey(sat)
+                    ? mConnectionCache[sat]
+                    : new List<NetworkRoute<ISatellite>>();
             }
         }
 
@@ -55,7 +69,8 @@ namespace RemoteTech
 
         private int mTick;
         private int mTickIndex;
-        private Dictionary<ISatellite, List<NetworkRoute<ISatellite>>> mConnectionCache = new Dictionary<ISatellite, List<NetworkRoute<ISatellite>>>();
+        private Dictionary<ISatellite, List<NetworkRoute<ISatellite>>> mConnectionCache =
+            new Dictionary<ISatellite, List<NetworkRoute<ISatellite>>>();
 
         public NetworkManager()
         {
@@ -79,7 +94,10 @@ namespace RemoteTech
                 }
                 catch (Exception e) // Already exists.
                 {
-					RTLog.Notify("A ground station cannot be loaded: " + e.Message, RTLogLevel.LVL1);
+                    RTLog.Notify(
+                        "A ground station cannot be loaded: " + e.Message,
+                        RTLogLevel.LVL1
+                    );
                 }
             }
 
@@ -101,9 +119,21 @@ namespace RemoteTech
         public void FindPath(ISatellite start, IEnumerable<ISatellite> commandStations)
         {
             var paths = new List<NetworkRoute<ISatellite>>();
-            foreach (ISatellite root in commandStations.Concat(GroundStations.Values).Where(r => r != start))
+            foreach (
+                ISatellite root in commandStations
+                    .Concat(GroundStations.Values)
+                    .Where(r => r != start)
+            )
             {
-                paths.Add(NetworkPathfinder.Solve(start, root, FindNeighbors, RangeModelExtensions.DistanceTo, RangeModelExtensions.DistanceTo));
+                paths.Add(
+                    NetworkPathfinder.Solve(
+                        start,
+                        root,
+                        FindNeighbors,
+                        RangeModelExtensions.DistanceTo,
+                        RangeModelExtensions.DistanceTo
+                    )
+                );
             }
             mConnectionCache[start] = paths.Where(p => p.Exists).ToList();
             mConnectionCache[start].Sort((a, b) => a.Length.CompareTo(b.Length));
@@ -112,7 +142,8 @@ namespace RemoteTech
 
         public IEnumerable<NetworkLink<ISatellite>> FindNeighbors(ISatellite s)
         {
-            if (!Graph.ContainsKey(s.Guid) || !s.Powered) return Enumerable.Empty<NetworkLink<ISatellite>>();
+            if (!Graph.ContainsKey(s.Guid) || !s.Powered)
+                return Enumerable.Empty<NetworkLink<ISatellite>>();
             if (RTSettings.Instance.SignalRelayEnabled)
             {
                 return Graph[s.Guid].Where(l => l.Target.Powered && l.Target.CanRelaySignal);
@@ -145,10 +176,13 @@ namespace RemoteTech
 
         public static NetworkLink<ISatellite> GetLink(ISatellite sat_a, ISatellite sat_b)
         {
-            if (sat_a == null || sat_b == null || sat_a == sat_b) return null;
-            if (sat_a.IsInRadioBlackout || sat_b.IsInRadioBlackout) return null;
+            if (sat_a == null || sat_b == null || sat_a == sat_b)
+                return null;
+            if (sat_a.IsInRadioBlackout || sat_b.IsInRadioBlackout)
+                return null;
             bool los = sat_a.HasLineOfSightWith(sat_b) || RTSettings.Instance.IgnoreLineOfSight;
-            if (!los) return null;
+            if (!los)
+                return null;
 
             switch (RTSettings.Instance.RangeModelType)
             {
@@ -162,19 +196,31 @@ namespace RemoteTech
         public void OnPhysicsUpdate()
         {
             var count = RTCore.Instance.Satellites.Count;
-            if (count == 0) return;
+            if (count == 0)
+                return;
             int baseline = (count / REFRESH_TICKS);
-            int takeCount = baseline + (((mTick++ % REFRESH_TICKS) < (count - baseline * REFRESH_TICKS)) ? 1 : 0);
-            IEnumerable<ISatellite> commandStations = RTCore.Instance.Satellites.FindCommandStations();
-            foreach (VesselSatellite s in RTCore.Instance.Satellites.Concat(RTCore.Instance.Satellites).Skip(mTickIndex).Take(takeCount))
+            int takeCount =
+                baseline
+                + (((mTick++ % REFRESH_TICKS) < (count - baseline * REFRESH_TICKS)) ? 1 : 0);
+            IEnumerable<ISatellite> commandStations =
+                RTCore.Instance.Satellites.FindCommandStations();
+            foreach (
+                VesselSatellite s in RTCore
+                    .Instance.Satellites.Concat(RTCore.Instance.Satellites)
+                    .Skip(mTickIndex)
+                    .Take(takeCount)
+            )
             {
                 UpdateGraph(s);
                 //("{0} [ E: {1} ]", s.ToString(), Graph[s.Guid].ToDebugString());
 
                 // amend this optimisation due to inconsistent connectivity on non-active vessels (eg showing no connection when 3rd-party mods query)
                 //if (s.SignalProcessor.VesselLoaded || HighLogic.LoadedScene == GameScenes.TRACKSTATION || RTCore.Instance.Renderer.ShowMultiPath)
-                if (HighLogic.LoadedScene == GameScenes.TRACKSTATION || HighLogic.LoadedScene == GameScenes.FLIGHT ||
-                    (HighLogic.LoadedScene == GameScenes.SPACECENTER && API.API.enabledInSPC))
+                if (
+                    HighLogic.LoadedScene == GameScenes.TRACKSTATION
+                    || HighLogic.LoadedScene == GameScenes.FLIGHT
+                    || (HighLogic.LoadedScene == GameScenes.SPACECENTER && API.API.enabledInSPC)
+                )
                 {
                     FindPath(s, commandStations);
                 }
@@ -202,7 +248,10 @@ namespace RemoteTech
 
         public IEnumerator<ISatellite> GetEnumerator()
         {
-            return RTCore.Instance.Satellites.Cast<ISatellite>().Concat(GroundStations.Values).GetEnumerator();
+            return RTCore
+                .Instance.Satellites.Cast<ISatellite>()
+                .Concat(GroundStations.Values)
+                .GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -211,20 +260,22 @@ namespace RemoteTech
         }
 
         /// <summary>Gets the position of a RemoteTech target from its id</summary>
-        /// <returns>The absolute position or null if <paramref name="targetable"/> is neither 
+        /// <returns>The absolute position or null if <paramref name="targetable"/> is neither
         /// a satellite nor a celestial body.</returns>
-        /// <param name="targetable">The id of the satellite or celestial body whose position is 
+        /// <param name="targetable">The id of the satellite or celestial body whose position is
         ///     desired. May be the active vessel Guid.</param>
-        /// 
+        ///
         /// <exceptsafe>The program state is unchanged in the event of an exception.</exceptsafe>
         internal Vector3d? GetPositionFromGuid(Guid targetable)
         {
             ISatellite targetSat = this[targetable];
-            if (targetSat != null) {
+            if (targetSat != null)
+            {
                 return targetSat.Position;
             }
 
-            if (Planets.ContainsKey(targetable)) {
+            if (Planets.ContainsKey(targetable))
+            {
                 return Planets[targetable].position;
             }
 
@@ -235,33 +286,96 @@ namespace RemoteTech
     public sealed class MissionControlSatellite : ISatellite, IPersistenceLoad
     {
         /* Config Node parameters */
-        [Persistent] private String Guid = new Guid("5105f5a9d62841c6ad4b21154e8fc488").ToString();
-        [Persistent] private String Name = Localizer.Format("#RT_MissionControl");//"Mission Control"
-        [Persistent] private double Latitude = -0.1313315f;
-        [Persistent] private double Longitude = -74.59484f;
-        [Persistent] private double Height = 75.0f;
-        [Persistent] private int Body = 1;
-        [Persistent] private Color MarkColor = new Color(0.996078f, 0, 0, 1);
-        [Persistent(collectionIndex = "ANTENNA")] private MissionControlAntenna[] Antennas = { new MissionControlAntenna() };
+        [Persistent]
+        private String Guid = new Guid("5105f5a9d62841c6ad4b21154e8fc488").ToString();
+
+        [Persistent]
+        private String Name = Localizer.Format("#RT_MissionControl"); //"Mission Control"
+
+        [Persistent]
+        private double Latitude = -0.1313315f;
+
+        [Persistent]
+        private double Longitude = -74.59484f;
+
+        [Persistent]
+        private double Height = 75.0f;
+
+        [Persistent]
+        private int Body = 1;
+
+        [Persistent]
+        private Color MarkColor = new Color(0.996078f, 0, 0, 1);
+
+        [Persistent(collectionIndex = "ANTENNA")]
+        private MissionControlAntenna[] Antennas = { new MissionControlAntenna() };
 
         private bool AntennaActivated = true;
 
-        bool ISatellite.Powered { get { return PowerShutdownFlag ? false : this.AntennaActivated; } }
-        bool ISatellite.Visible { get { return true; } }
-        String ISatellite.Name { get { return Name; } set { Name = value; } }
-        Guid ISatellite.Guid { get { return mGuid; } }
-        Vector3d ISatellite.Position { get { return FlightGlobals.Bodies[Body].GetWorldSurfacePosition(Latitude, Longitude, Height); } }
-        bool ISatellite.IsCommandStation { get { return true; } }
-        bool ISatellite.HasLocalControl { get { return false; } }
-        bool ISatellite.isVessel { get { return false; } }
-        Vessel ISatellite.parentVessel { get { return null; } }
-        CelestialBody ISatellite.Body { get { return FlightGlobals.Bodies[Body]; } }
-        Color ISatellite.MarkColor { get { return MarkColor; } }
-        IEnumerable<IAntenna> ISatellite.Antennas { get { return Antennas; } }
-        bool ISatellite.CanRelaySignal { get { return true; } } //not sure if should relay signal. Mission Control can "do" everything isnt it?
-        
+        bool ISatellite.Powered
+        {
+            get { return PowerShutdownFlag ? false : this.AntennaActivated; }
+        }
+        bool ISatellite.Visible
+        {
+            get { return true; }
+        }
+        String ISatellite.Name
+        {
+            get { return Name; }
+            set { Name = value; }
+        }
+        Guid ISatellite.Guid
+        {
+            get { return mGuid; }
+        }
+        Vector3d ISatellite.Position
+        {
+            get
+            {
+                return FlightGlobals
+                    .Bodies[Body]
+                    .GetWorldSurfacePosition(Latitude, Longitude, Height);
+            }
+        }
+        bool ISatellite.IsCommandStation
+        {
+            get { return true; }
+        }
+        bool ISatellite.HasLocalControl
+        {
+            get { return false; }
+        }
+        bool ISatellite.isVessel
+        {
+            get { return false; }
+        }
+        Vessel ISatellite.parentVessel
+        {
+            get { return null; }
+        }
+        CelestialBody ISatellite.Body
+        {
+            get { return FlightGlobals.Bodies[Body]; }
+        }
+        Color ISatellite.MarkColor
+        {
+            get { return MarkColor; }
+        }
+        IEnumerable<IAntenna> ISatellite.Antennas
+        {
+            get { return Antennas; }
+        }
+        bool ISatellite.CanRelaySignal
+        {
+            get { return true; }
+        } //not sure if should relay signal. Mission Control can "do" everything isnt it?
+
         public Guid mGuid { get; private set; }
-        public IEnumerable<IAntenna> MissionControlAntennas { get { return Antennas; } }
+        public IEnumerable<IAntenna> MissionControlAntennas
+        {
+            get { return Antennas; }
+        }
         public bool IsInRadioBlackout { get; set; } // could be EMP
         public bool PowerShutdownFlag { get; set; } // flag for third-party realism mods
 
@@ -279,26 +393,34 @@ namespace RemoteTech
                 antenna.reloadUpgradeableAntennas(techlvl);
             }
         }
-		/*
-		 * Simple getter + setter. 
-		 * For being able to add groundstations.
-		 */
-		public void SetDetails(String name, double lat, double longi, double height, int body)
-		{
-			this.Name = name;
-			this.Latitude = lat;
-			this.Longitude = longi;
-			this.Height = height;
-			this.Body = body;
-			this.mGuid = System.Guid.NewGuid ();
-			this.Guid = this.mGuid.ToString ();
-		}
 
-		public String GetDetails()
-		{
-			return String.Format ("name:{0}, lat={1}, long={2}, height={3}, body={4}", this.Name, this.Latitude, this.Longitude, this.Height, this.Body);
-		}
-        
+        /*
+         * Simple getter + setter.
+         * For being able to add groundstations.
+         */
+        public void SetDetails(String name, double lat, double longi, double height, int body)
+        {
+            this.Name = name;
+            this.Latitude = lat;
+            this.Longitude = longi;
+            this.Height = height;
+            this.Body = body;
+            this.mGuid = System.Guid.NewGuid();
+            this.Guid = this.mGuid.ToString();
+        }
+
+        public String GetDetails()
+        {
+            return String.Format(
+                "name:{0}, lat={1}, long={2}, height={3}, body={4}",
+                this.Name,
+                this.Latitude,
+                this.Longitude,
+                this.Height,
+                this.Body
+            );
+        }
+
         public String GetName()
         {
             return this.Name;

@@ -13,8 +13,8 @@ namespace RemoteTech.SimpleTypes
     {
         public bool Equals(BidirectionalEdge<T> other)
         {
-            return (A.Equals(other.A) || A.Equals(other.B)) &&
-                   (B.Equals(other.A) || B.Equals(other.B));
+            return (A.Equals(other.A) || A.Equals(other.B))
+                && (B.Equals(other.A) || B.Equals(other.B));
         }
 
         public readonly T A;
@@ -35,7 +35,12 @@ namespace RemoteTech.SimpleTypes
 
         public override string ToString()
         {
-            return String.Format("BidirectionalEdge(A: {0}, B: {1}, Type {2})", A, B, Type.ToString());
+            return String.Format(
+                "BidirectionalEdge(A: {0}, B: {1}, Type {2})",
+                A,
+                B,
+                Type.ToString()
+            );
         }
     }
 }

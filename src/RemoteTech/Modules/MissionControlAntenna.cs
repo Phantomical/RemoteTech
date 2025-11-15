@@ -5,47 +5,111 @@ namespace RemoteTech.Modules
 {
     public sealed class MissionControlAntenna : IAntenna
     {
-        [Persistent] public float Omni = 75000000;
-        [Persistent] public float Dish = 0.0f;
-        [Persistent] public double CosAngle = 1.0;
+        [Persistent]
+        public float Omni = 75000000;
+
+        [Persistent]
+        public float Dish = 0.0f;
+
+        [Persistent]
+        public double CosAngle = 1.0;
 
         /// <summary>
         /// Semicolon seperated list with omni ranges for each tech lvl of the tracking station
         /// </summary>
-        [Persistent] public string UpgradeableOmni = String.Empty;
+        [Persistent]
+        public string UpgradeableOmni = String.Empty;
+
         /// <summary>
         /// Semicolon seperated list with dish ranges for each tech lvl of the tracking station
         /// </summary>
-        [Persistent] public string UpgradeableDish = String.Empty;
+        [Persistent]
+        public string UpgradeableDish = String.Empty;
+
         /// <summary>
         /// Semicolon seperated list with CosAngle ranges for each tech lvl of the tracking station
         /// </summary>
-        [Persistent] public string UpgradeableCosAngle = String.Empty;
+        [Persistent]
+        public string UpgradeableCosAngle = String.Empty;
 
         public ISatellite Parent { get; set; }
 
-        float IAntenna.Omni { get { return Omni * MissionControlRangeMultiplier; } }
-        Guid IAntenna.Guid { get { return Parent.Guid; } }
-        String IAntenna.Name { get { return "Dummy Antenna"; } }
-        bool IAntenna.Powered { get { return true; } }
-        public bool Connected { get { return RTCore.Instance.Network.Graph [((IAntenna)this).Guid].Any (l => l.Interfaces.Contains (this)); } }
-        bool IAntenna.Activated { get { return true; } set { return; } }
-        float IAntenna.Consumption { get { return 0.0f; } }
-        bool IAntenna.CanTarget { get { return false; } }
-        Guid IAntenna.Target { get { return new Guid(RTSettings.Instance.ActiveVesselGuid); } set { return; } }
-        float IAntenna.Dish { get { return Dish * MissionControlRangeMultiplier; } }
-        double IAntenna.CosAngle { get { return CosAngle; } }
-        private float MissionControlRangeMultiplier { get { return RTSettings.Instance.MissionControlRangeMultiplier; } }
+        float IAntenna.Omni
+        {
+            get { return Omni * MissionControlRangeMultiplier; }
+        }
+        Guid IAntenna.Guid
+        {
+            get { return Parent.Guid; }
+        }
+        String IAntenna.Name
+        {
+            get { return "Dummy Antenna"; }
+        }
+        bool IAntenna.Powered
+        {
+            get { return true; }
+        }
+        public bool Connected
+        {
+            get
+            {
+                return RTCore
+                    .Instance.Network.Graph[((IAntenna)this).Guid]
+                    .Any(l => l.Interfaces.Contains(this));
+            }
+        }
+        bool IAntenna.Activated
+        {
+            get { return true; }
+            set { return; }
+        }
+        float IAntenna.Consumption
+        {
+            get { return 0.0f; }
+        }
+        bool IAntenna.CanTarget
+        {
+            get { return false; }
+        }
+        Guid IAntenna.Target
+        {
+            get { return new Guid(RTSettings.Instance.ActiveVesselGuid); }
+            set { return; }
+        }
+        float IAntenna.Dish
+        {
+            get { return Dish * MissionControlRangeMultiplier; }
+        }
+        double IAntenna.CosAngle
+        {
+            get { return CosAngle; }
+        }
+        private float MissionControlRangeMultiplier
+        {
+            get { return RTSettings.Instance.MissionControlRangeMultiplier; }
+        }
 
         public void reloadUpgradeableAntennas(int techlvl = 0)
         {
-            if (this.UpgradeableCosAngle != String.Empty && this.UpgradeableDish != String.Empty && this.UpgradeableOmni != String.Empty)
+            if (
+                this.UpgradeableCosAngle != String.Empty
+                && this.UpgradeableDish != String.Empty
+                && this.UpgradeableOmni != String.Empty
+            )
                 return;
 
             int missionControlTechLevel = techlvl;
-            if(missionControlTechLevel == 0)
+            if (missionControlTechLevel == 0)
             {
-                missionControlTechLevel = (int)((2 * ScenarioUpgradeableFacilities.GetFacilityLevel(SpaceCenterFacility.TrackingStation)) + 1);
+                missionControlTechLevel = (int)(
+                    (
+                        2
+                        * ScenarioUpgradeableFacilities.GetFacilityLevel(
+                            SpaceCenterFacility.TrackingStation
+                        )
+                    ) + 1
+                );
             }
 
             // when the option is disabled, use always the thrid tech lvl
@@ -54,7 +118,11 @@ namespace RemoteTech.Modules
                 missionControlTechLevel = 3;
             }
 
-            RTLog.Verbose("Reload upgradeable Antennas, TechLvl: {0}", RTLogLevel.LVL4, missionControlTechLevel);
+            RTLog.Verbose(
+                "Reload upgradeable Antennas, TechLvl: {0}",
+                RTLogLevel.LVL4,
+                missionControlTechLevel
+            );
 
             if (this.UpgradeableOmni != String.Empty)
             {
@@ -89,7 +157,10 @@ namespace RemoteTech.Modules
                     missionControlTechLevelForCAngle = cAngleRanges.Count();
                 }
 
-                double.TryParse(cAngleRanges[missionControlTechLevelForCAngle - 1], out this.CosAngle);
+                double.TryParse(
+                    cAngleRanges[missionControlTechLevelForCAngle - 1],
+                    out this.CosAngle
+                );
             }
         }
 

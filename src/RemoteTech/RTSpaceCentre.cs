@@ -1,8 +1,8 @@
-﻿using RemoteTech.UI;
-using System;
+﻿using System;
 using System.Linq;
-using UnityEngine;
 using KSP.UI.Screens;
+using RemoteTech.UI;
+using UnityEngine;
 
 namespace RemoteTech
 {
@@ -14,6 +14,7 @@ namespace RemoteTech
 
         /// <summary>OptionWindow</summary>
         private OptionWindow _optionWindow;
+
         /// <summary>Texture for the KSP Stock Tool-bar Button</summary>
         private Texture2D _rtOptionBtn;
 
@@ -24,7 +25,7 @@ namespace RemoteTech
         {
             // create the option window
             _optionWindow = new OptionWindow();
-            
+
             GameEvents.onLevelWasLoaded.Add(onLevelWasLoaded);
             GameEvents.OnUpgradeableObjLevelChange.Add(OnUpgradeableObjLevelChange);
             RTSettings.OnSettingsChanged.Add(OnRtSettingsChanged);
@@ -32,9 +33,15 @@ namespace RemoteTech
             _rtOptionBtn = RTUtil.LoadImage("gitpagessat");
 
             LauncherButton = ApplicationLauncher.Instance.AddModApplication(
-                _optionWindow.toggleWindow, null, null, null, null, null,
+                _optionWindow.toggleWindow,
+                null,
+                null,
+                null,
+                null,
+                null,
                 ApplicationLauncher.AppScenes.SPACECENTER,
-                _rtOptionBtn);
+                _rtOptionBtn
+            );
         }
 
         /// <summary>
@@ -45,8 +52,13 @@ namespace RemoteTech
             if (!obj.name.Equals("TrackingStation"))
                 return;
 
-            RTLog.Verbose("OnUpgradeableObjLevelChange {0} - Level: {1}", RTLogLevel.LVL4, obj.name, lvl);
-            ReloadUpgradableAntennas(lvl+1);
+            RTLog.Verbose(
+                "OnUpgradeableObjLevelChange {0} - Level: {1}",
+                RTLogLevel.LVL4,
+                obj.name,
+                lvl
+            );
+            ReloadUpgradableAntennas(lvl + 1);
         }
 
         /// <summary>
@@ -78,7 +90,7 @@ namespace RemoteTech
         /// <param name="techlvl">The level applied to the antennas range.</param>
         private void ReloadUpgradableAntennas(int techlvl = 0)
         {
-            foreach ( var satellite in RTSettings.Instance.GroundStations)
+            foreach (var satellite in RTSettings.Instance.GroundStations)
             {
                 satellite.reloadUpgradeableAntennas(techlvl);
             }

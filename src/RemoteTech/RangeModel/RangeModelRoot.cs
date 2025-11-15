@@ -17,13 +17,19 @@ namespace RemoteTech.RangeModel
         /// <param name="antenna">The antenna attempting to target.</param>
         /// <param name="target">The satellite being targeted by <paramref name="antenna"/>.</param>
         /// <param name="antennaSat">The satellite on which <paramref name="antenna"/> is mounted.</param>
-        public static double GetRangeInContext(IAntenna antenna, ISatellite target, ISatellite antennaSat) {
+        public static double GetRangeInContext(
+            IAntenna antenna,
+            ISatellite target,
+            ISatellite antennaSat
+        )
+        {
             return AbstractRangeModel.GetRangeInContext(antenna, target, antennaSat, MaxDistance);
         }
 
         /// <summary>Constructs a link between two satellites, if one is possible.</summary>
         /// <returns>The new link, or null if the two satellites cannot connect.</returns>
-        public static NetworkLink<ISatellite> GetLink(ISatellite satA, ISatellite satB) {
+        public static NetworkLink<ISatellite> GetLink(ISatellite satA, ISatellite satB)
+        {
             return AbstractRangeModel.GetLink(satA, satB, MaxDistance);
         }
     }

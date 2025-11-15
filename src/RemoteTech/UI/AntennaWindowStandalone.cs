@@ -1,6 +1,6 @@
-﻿using KSP.Localization;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using KSP.Localization;
 using UnityEngine;
 using static RemoteTech.UI.AntennaFragment;
 
@@ -12,13 +12,22 @@ namespace RemoteTech.UI
     /// </summary>
     public class AntennaWindowStandalone : AbstractWindow
     {
-        private const float winWidth = 300, winHeight = 500, startX = 300, startY = 100;
+        private const float winWidth = 300,
+            winHeight = 500,
+            startX = 300,
+            startY = 100;
         public static Guid Guid = new Guid("f3959a08-073a-4790-a74a-b78cd891ea64");
         private IAntenna mAntenna;
         public IAntenna Antenna
         {
             get { return mAntenna; }
-            set { if (mAntenna != value) { mAntenna = value; } }
+            set
+            {
+                if (mAntenna != value)
+                {
+                    mAntenna = value;
+                }
+            }
         }
 
         private Vector2 scrollPosition = Vector2.zero;
@@ -27,7 +36,12 @@ namespace RemoteTech.UI
         private Entry selectedEntry;
 
         public AntennaWindowStandalone(IAntenna antenna)
-            : base(Guid, "Antenna Configuration", new Rect(startX, startY, winWidth, winHeight), WindowAlign.Floating)
+            : base(
+                Guid,
+                "Antenna Configuration",
+                new Rect(startX, startY, winWidth, winHeight),
+                WindowAlign.Floating
+            )
         {
             mSavePosition = true;
             mAntenna = antenna;
@@ -66,7 +80,7 @@ namespace RemoteTech.UI
                 GUI.skin.button.alignment = TextAnchor.MiddleLeft;
                 // Depth-first tree traversal.
                 Stack<Entry> dfs = new Stack<Entry>();
-                for(int i=0;i< rootEntry.SubEntries.Count;i++)
+                for (int i = 0; i < rootEntry.SubEntries.Count; i++)
                 {
                     var child = rootEntry.SubEntries[i];
                     dfs.Push(child);
@@ -83,20 +97,26 @@ namespace RemoteTech.UI
                         GUILayout.Space(current.Depth * (GUI.skin.button.margin.left + 24));
                         if (current.SubEntries.Count > 0)
                         {
-                            RTUtil.Button(current.Expanded ? " <" : " >",
+                            RTUtil.Button(
+                                current.Expanded ? " <" : " >",
                                 () =>
                                 {
                                     current.Expanded = !current.Expanded;
-                                }, 
-                                GUILayout.Width(24));
+                                },
+                                GUILayout.Width(24)
+                            );
                         }
 
-                        RTUtil.StateButton(current.Text, selectedEntry == current ? 1 : 0, 1,
+                        RTUtil.StateButton(
+                            current.Text,
+                            selectedEntry == current ? 1 : 0,
+                            1,
                             (s) =>
                             {
                                 selectedEntry = current;
                                 Antenna.Target = selectedEntry.Guid;
-                            });
+                            }
+                        );
                     }
                     GUILayout.EndHorizontal();
 
@@ -110,7 +130,6 @@ namespace RemoteTech.UI
                         }
                     }
                 }
-
             }
             finally
             {
@@ -125,19 +144,22 @@ namespace RemoteTech.UI
             // Add "No Target" entry
             selectedEntry = new Entry() // selected entry by default
             {
-                Text = Localizer.Format("#RT_ModuleUI_NoTarget"),//"No Target"
+                Text = Localizer.Format("#RT_ModuleUI_NoTarget"), //"No Target"
                 Guid = new Guid(RTSettings.Instance.NoTargetGuid),
                 Color = Color.white,
                 Depth = 0,
             };
             rootEntry.SubEntries.Add(selectedEntry);
 
-            if (Antenna == null) { return; }
+            if (Antenna == null)
+            {
+                return;
+            }
 
             // Add "Active Vessel" entry
             var activeVesselEntry = new Entry()
             {
-                Text = Localizer.Format("#RT_ModuleUI_ActiveVessel"),//"Active Vessel"
+                Text = Localizer.Format("#RT_ModuleUI_ActiveVessel"), //"Active Vessel"
                 Guid = NetworkManager.ActiveVesselGuid,
                 Color = Color.white,
                 Depth = 0,
@@ -166,7 +188,8 @@ namespace RemoteTech.UI
                 var current = celestialBodyEntryDict[cb];
                 current.Text = cb.bodyName;
                 current.Guid = cb.Guid();
-                current.Color = cb.GetOrbitDriver() != null ? cb.GetOrbitDriver().orbitColor : Color.yellow;
+                current.Color =
+                    cb.GetOrbitDriver() != null ? cb.GetOrbitDriver().orbitColor : Color.yellow;
                 current.Color.a = 1.0f;
 
                 // have moons?
@@ -195,11 +218,19 @@ namespace RemoteTech.UI
             for (int i = 0; i < FlightGlobals.Bodies.Count; i++)
             {
                 var cb = FlightGlobals.Bodies[i];
-                celestialBodyEntryDict[cb].SubEntries.Sort((b, a) =>
-                {
-                    return FlightGlobals.Bodies.Find(x => x.Guid() == a.Guid).orbit.semiMajorAxis.CompareTo(
-                        FlightGlobals.Bodies.Find(x => x.Guid() == b.Guid).orbit.semiMajorAxis);
-                });
+                celestialBodyEntryDict[cb]
+                    .SubEntries.Sort(
+                        (b, a) =>
+                        {
+                            return FlightGlobals
+                                .Bodies.Find(x => x.Guid() == a.Guid)
+                                .orbit.semiMajorAxis.CompareTo(
+                                    FlightGlobals
+                                        .Bodies.Find(x => x.Guid() == b.Guid)
+                                        .orbit.semiMajorAxis
+                                );
+                        }
+                    );
             }
             rootEntry.SubEntries.Reverse();
         }
@@ -216,7 +247,8 @@ namespace RemoteTech.UI
                         Guid = RTSettings.Instance.GroundStations[i].mGuid,
                         Color = Color.white,
                     };
-                    celestialBodyEntryDict[RTSettings.Instance.GroundStations[i].GetBody()].SubEntries.Add(current);
+                    celestialBodyEntryDict[RTSettings.Instance.GroundStations[i].GetBody()]
+                        .SubEntries.Add(current);
 
                     // is it antenna's selected entry?
                     if (Antenna.Target == RTSettings.Instance.GroundStations[i].mGuid)

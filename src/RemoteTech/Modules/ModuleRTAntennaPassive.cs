@@ -9,47 +9,96 @@ namespace RemoteTech.Modules
     /// <summary>
     /// This module represents an omni-directional antenna that is always on, but consumes no power. Intended as a secondary function on non-antenna parts, such as probe cores.
     /// </summary>
-    [KSPModule("#RT_Editor_TechnologyPerk")]//Technology Perk
+    [KSPModule("#RT_Editor_TechnologyPerk")] //Technology Perk
     public class ModuleRTAntennaPassive : PartModule, IAntenna
     {
-        public String Name { get { return part.partInfo.title; } }
-        public Guid Guid { get { return vessel.id; } }
-        public bool Powered { get { return Activated; } }
-        public bool Connected { get { return (RTCore.Instance != null && RTCore.Instance.Network.Graph [Guid].Any (l => l.Interfaces.Contains (this))); } }
-        public bool Activated { get { return Unlocked; } set { return; } }
-        public bool Animating { get { return false; } }
+        public String Name
+        {
+            get { return part.partInfo.title; }
+        }
+        public Guid Guid
+        {
+            get { return vessel.id; }
+        }
+        public bool Powered
+        {
+            get { return Activated; }
+        }
+        public bool Connected
+        {
+            get
+            {
+                return (
+                    RTCore.Instance != null
+                    && RTCore.Instance.Network.Graph[Guid].Any(l => l.Interfaces.Contains(this))
+                );
+            }
+        }
+        public bool Activated
+        {
+            get { return Unlocked; }
+            set { return; }
+        }
+        public bool Animating
+        {
+            get { return false; }
+        }
 
-        public bool CanTarget { get { return false; } }
-        public Guid Target { get { return Guid.Empty; } set { return; } }
+        public bool CanTarget
+        {
+            get { return false; }
+        }
+        public Guid Target
+        {
+            get { return Guid.Empty; }
+            set { return; }
+        }
 
-        public float Dish { get { return -1.0f; } }
-        public double CosAngle { get { return 1.0f; } }
-        public float Omni { get { return Activated ? OmniRange * RangeMultiplier : 0.0f; } }
-        public float Consumption { get { return 0.0f; } }
-        public Vector3d Position { get { return vessel.GetWorldPos3D(); } }
+        public float Dish
+        {
+            get { return -1.0f; }
+        }
+        public double CosAngle
+        {
+            get { return 1.0f; }
+        }
+        public float Omni
+        {
+            get { return Activated ? OmniRange * RangeMultiplier : 0.0f; }
+        }
+        public float Consumption
+        {
+            get { return 0.0f; }
+        }
+        public Vector3d Position
+        {
+            get { return vessel.GetWorldPos3D(); }
+        }
 
-        private float RangeMultiplier { get { return RTSettings.Instance.RangeMultiplier; } }
-        public bool Unlocked { get { return RTUtil.IsTechUnlocked(TechRequired); } }
+        private float RangeMultiplier
+        {
+            get { return RTSettings.Instance.RangeMultiplier; }
+        }
+        public bool Unlocked
+        {
+            get { return RTUtil.IsTechUnlocked(TechRequired); }
+        }
 
         [KSPField]
-        public bool
-            ShowEditor_OmniRange = true,
+        public bool ShowEditor_OmniRange = true,
             ShowGUI_OmniRange = true;
 
-        [KSPField(guiName = "#RT_ModuleUI_Omnirange")]//Omni range
+        [KSPField(guiName = "#RT_ModuleUI_Omnirange")] //Omni range
         public String GUI_OmniRange;
 
         [KSPField]
-        public String
-            TechRequired = "None";
+        public String TechRequired = "None";
 
         [KSPField]
-        public float
-            OmniRange;
+        public float OmniRange;
 
         [KSPField(isPersistant = true)]
-        public bool
-            IsRTAntenna = true,
+        public bool IsRTAntenna = true,
             IsRTActive = true,
             IsRTPowered = false,
             IsRTBroken = false;
@@ -58,8 +107,7 @@ namespace RemoteTech.Modules
         public double RTDishCosAngle = 1.0f;
 
         [KSPField(isPersistant = true)]
-        public float
-            RTOmniRange = 0.0f,
+        public float RTOmniRange = 0.0f,
             RTDishRange = -1.0f;
 
         [KSPField] // Persistence handled by Save()
@@ -67,12 +115,12 @@ namespace RemoteTech.Modules
 
         // workarround for ksp 1.0
         [KSPField]
-        public float
-            RTPacketInterval = 0.0f,
+        public float RTPacketInterval = 0.0f,
             RTPacketSize = 0.0f,
             RTPacketResourceCost = 0.0f;
 
-        public int[] mDeployFxModuleIndices, mProgressFxModuleIndices;
+        public int[] mDeployFxModuleIndices,
+            mProgressFxModuleIndices;
         public ConfigNode mTransmitterConfig;
         private IScienceDataTransmitter mTransmitter;
 
@@ -83,7 +131,11 @@ namespace RemoteTech.Modules
             var info = new StringBuilder();
             if (ShowEditor_OmniRange && Unlocked)
             {
-                info.AppendFormat(Localizer.Format("#RT_Editor_TechnologyPerk_info1","{1}"), RTUtil.FormatSI(OmniRange, "m"), RTUtil.FormatSI(OmniRange, "m"));//"Integrated Omni: {1} always-on"
+                info.AppendFormat(
+                    Localizer.Format("#RT_Editor_TechnologyPerk_info1", "{1}"),
+                    RTUtil.FormatSI(OmniRange, "m"),
+                    RTUtil.FormatSI(OmniRange, "m")
+                ); //"Integrated Omni: {1} always-on"
             }
 
             return info.ToString();
@@ -92,10 +144,15 @@ namespace RemoteTech.Modules
         public virtual void SetState(bool state)
         {
             IsRTActive = state;
-            if(RTCore.Instance != null)
+            if (RTCore.Instance != null)
             {
                 var satellite = RTCore.Instance.Network[Guid];
-                bool route_home = RTCore.Instance.Network[satellite].Any(r => r.Links[0].Interfaces.Contains(this) && RTCore.Instance.Network.GroundStations.ContainsKey(r.Goal.Guid));
+                bool route_home = RTCore
+                    .Instance.Network[satellite]
+                    .Any(r =>
+                        r.Links[0].Interfaces.Contains(this)
+                        && RTCore.Instance.Network.GroundStations.ContainsKey(r.Goal.Guid)
+                    );
                 if (mTransmitter == null && route_home)
                 {
                     AddTransmitter();
@@ -129,7 +186,9 @@ namespace RemoteTech.Modules
                     RTPacketSize = float.Parse(mTransmitterConfig.GetValue("PacketSize"));
 
                 if (mTransmitterConfig.HasValue("PacketResourceCost"))
-                    RTPacketResourceCost = float.Parse(mTransmitterConfig.GetValue("PacketResourceCost"));
+                    RTPacketResourceCost = float.Parse(
+                        mTransmitterConfig.GetValue("PacketResourceCost")
+                    );
             }
         }
 
@@ -166,7 +225,8 @@ namespace RemoteTech.Modules
 
         private void AddTransmitter()
         {
-            if (mTransmitterConfig == null || !mTransmitterConfig.HasValue("name")) return;
+            if (mTransmitterConfig == null || !mTransmitterConfig.HasValue("name"))
+                return;
             var transmitters = part.FindModulesImplementing<IScienceDataTransmitter>();
             if (transmitters.Count > 0)
             {
@@ -186,8 +246,9 @@ namespace RemoteTech.Modules
         private void RemoveTransmitter()
         {
             RTLog.Notify("ModuleRTAntennaPassive: Remove TRANSMITTER success.");
-            if (mTransmitter == null) return;
-            part.RemoveModule((PartModule) mTransmitter);
+            if (mTransmitter == null)
+                return;
+            part.RemoveModule((PartModule)mTransmitter);
             mTransmitter = null;
         }
 
@@ -197,7 +258,8 @@ namespace RemoteTech.Modules
         private List<IScalarModule> FindFxModules(int[] indices, bool showUI)
         {
             var modules = new List<IScalarModule>();
-            if (indices == null) return modules;
+            if (indices == null)
+                return modules;
             foreach (int i in indices)
             {
                 var item = base.part.Modules[i] as IScalarModule;
@@ -209,7 +271,10 @@ namespace RemoteTech.Modules
                 }
                 else
                 {
-                    RTLog.Notify("ModuleRTAntennaPassive: Part Module {0} doesn't implement IScalarModule", part.Modules[i].name);
+                    RTLog.Notify(
+                        "ModuleRTAntennaPassive: Part Module {0} doesn't implement IScalarModule",
+                        part.Modules[i].name
+                    );
                 }
             }
             return modules;
@@ -232,7 +297,7 @@ namespace RemoteTech.Modules
             if (p.vessel == vessel)
             {
                 OnVesselModified(p.vessel);
-            } 
+            }
         }
 
         private void OnVesselModified(Vessel v)
@@ -252,7 +317,12 @@ namespace RemoteTech.Modules
 
         public override string ToString()
         {
-            return String.Format("ModuleRTAntennaPassive(Name: {0}, Guid: {1}, Omni: {2})", Name, mRegisteredId, Omni);
+            return String.Format(
+                "ModuleRTAntennaPassive(Name: {0}, Guid: {1}, Omni: {2})",
+                Name,
+                mRegisteredId,
+                Omni
+            );
         }
     }
 }

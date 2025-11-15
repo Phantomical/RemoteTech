@@ -50,7 +50,10 @@ namespace RemoteTech.UI
         private TargetInfoWindow mTargetInfos;
         private bool mEnabled;
         private bool mShowOverlay = true;
-        private bool onTrackingStation { get { return (HighLogic.LoadedScene == GameScenes.TRACKSTATION); } }
+        private bool onTrackingStation
+        {
+            get { return (HighLogic.LoadedScene == GameScenes.TRACKSTATION); }
+        }
 
         public static GUIStyle Button;
         public static GUIStyle ButtonGray;
@@ -75,7 +78,8 @@ namespace RemoteTech.UI
                     {
                         var obj = GameObject.Find("Side Bar");
                         if (obj != null)
-                            mImg = obj.GetChild("bg (stretch)").GetComponent<UnityEngine.UI.Image>();
+                            mImg = obj.GetChild("bg (stretch)")
+                                .GetComponent<UnityEngine.UI.Image>();
                     }
 
                     if (mImg != null)
@@ -84,7 +88,12 @@ namespace RemoteTech.UI
                     }
                 }
 
-                return new Rect(posX, posY, mTextures.Background.width * GameSettings.UI_SCALE, mTextures.Background.height * GameSettings.UI_SCALE);
+                return new Rect(
+                    posX,
+                    posY,
+                    mTextures.Background.width * GameSettings.UI_SCALE,
+                    mTextures.Background.height * GameSettings.UI_SCALE
+                );
             }
         }
 
@@ -99,13 +108,13 @@ namespace RemoteTech.UI
                 // mirror to the left side on the tracking station
                 if (this.onTrackingStation)
                 {
-
                     // Same new side bar checking... if someone finds a better method for this please fix
                     if (mImg == null)
                     {
                         var obj = GameObject.Find("Side Bar");
-                        if(obj != null)
-                            mImg = obj.GetChild("bg (stretch)").GetComponent<UnityEngine.UI.Image>();
+                        if (obj != null)
+                            mImg = obj.GetChild("bg (stretch)")
+                                .GetComponent<UnityEngine.UI.Image>();
                     }
 
                     if (mImg != null)
@@ -116,7 +125,6 @@ namespace RemoteTech.UI
 
                 return new Rect(posX, Screen.height - height, width, height);
             }
-
         }
 
         private Rect PositionAntenna
@@ -135,7 +143,6 @@ namespace RemoteTech.UI
 
                 return new Rect(posX, Screen.height - height, width, height);
             }
-
         }
 
         private Texture2D TextureComButton
@@ -232,7 +239,6 @@ namespace RemoteTech.UI
 
             // Create a new Targetinfo window with a fixed position to the antenna fragment
             mTargetInfos = new TargetInfoWindow(PositionAntenna, targetInfoAlign);
-
         }
 
         public void Dispose()
@@ -265,9 +271,10 @@ namespace RemoteTech.UI
         {
             mAntennaFragment.Antenna = mSatelliteFragment.Antenna;
             var sat = mSatelliteFragment.Satellite;
-            if (sat == null) return;
+            if (sat == null)
+                return;
             if (!RTCore.Instance.Network[sat].Any() && !sat.HasLocalControl)
-            { 
+            {
                 mSatelliteFragment.Satellite = null;
                 mAntennaFragment.Antenna = null;
             }
@@ -293,7 +300,8 @@ namespace RemoteTech.UI
 
         public void Draw()
         {
-            if (!mShowOverlay) return;
+            if (!mShowOverlay)
+                return;
             GUI.depth = 0;
             GUI.skin = HighLogic.Skin;
 
@@ -314,9 +322,14 @@ namespace RemoteTech.UI
             }
 
             // Draw Antenna Selector
-            mAntennaFragment.triggerMouseOverListEntry = PositionAntenna.Contains(Event.current.mousePosition) && mEnabled;
+            mAntennaFragment.triggerMouseOverListEntry =
+                PositionAntenna.Contains(Event.current.mousePosition) && mEnabled;
 
-            if (mEnabled && mSatelliteFragment.Satellite != null && mAntennaFragment.Antenna != null)
+            if (
+                mEnabled
+                && mSatelliteFragment.Satellite != null
+                && mAntennaFragment.Antenna != null
+            )
             {
                 GUILayout.BeginArea(PositionAntenna, AbstractWindow.Frame);
                 {
@@ -325,14 +338,12 @@ namespace RemoteTech.UI
                 GUILayout.EndArea();
             }
 
-            
             // Switch the background from map view to tracking station
             Texture2D backgroundImage = mTextures.Background;
-            if(this.onTrackingStation)
+            if (this.onTrackingStation)
             {
                 backgroundImage = mTextures.BackgroundLeft;
             }
-
 
             // TODO: Fix textures
             // Draw Toolbar
@@ -343,25 +354,81 @@ namespace RemoteTech.UI
                 {
                     if (this.onTrackingStation)
                     {
-                        if (GUILayout.Button("", StyleStatusButton, GUILayout.Width(mTextures.SatButton.width * GameSettings.UI_SCALE), GUILayout.Height(mTextures.SatButton.height * GameSettings.UI_SCALE)))
+                        if (
+                            GUILayout.Button(
+                                "",
+                                StyleStatusButton,
+                                GUILayout.Width(mTextures.SatButton.width * GameSettings.UI_SCALE),
+                                GUILayout.Height(mTextures.SatButton.height * GameSettings.UI_SCALE)
+                            )
+                        )
                             OnClickStatus();
-                        if (GUILayout.Button(TextureTypeButton, Button, GUILayout.Width(mTextures.OmniDish.width * GameSettings.UI_SCALE), GUILayout.Height(mTextures.OmniDish.height * GameSettings.UI_SCALE)))
+                        if (
+                            GUILayout.Button(
+                                TextureTypeButton,
+                                Button,
+                                GUILayout.Width(mTextures.OmniDish.width * GameSettings.UI_SCALE),
+                                GUILayout.Height(mTextures.OmniDish.height * GameSettings.UI_SCALE)
+                            )
+                        )
                             OnClickType();
-                        if (GUILayout.Button(TextureReachButton, Button, GUILayout.Width(mTextures.Cone.width * GameSettings.UI_SCALE), GUILayout.Height(mTextures.Cone.height * GameSettings.UI_SCALE)))
+                        if (
+                            GUILayout.Button(
+                                TextureReachButton,
+                                Button,
+                                GUILayout.Width(mTextures.Cone.width * GameSettings.UI_SCALE),
+                                GUILayout.Height(mTextures.Cone.height * GameSettings.UI_SCALE)
+                            )
+                        )
                             OnClickReach();
-                        if (GUILayout.Button(TextureComButton, Button, GUILayout.Width(mTextures.Path.width * GameSettings.UI_SCALE), GUILayout.Height(mTextures.Path.height * GameSettings.UI_SCALE)))
+                        if (
+                            GUILayout.Button(
+                                TextureComButton,
+                                Button,
+                                GUILayout.Width(mTextures.Path.width * GameSettings.UI_SCALE),
+                                GUILayout.Height(mTextures.Path.height * GameSettings.UI_SCALE)
+                            )
+                        )
                             OnClickCompath();
                     }
                     else
                     {
                         GUILayout.FlexibleSpace();
-                        if (GUILayout.Button(TextureComButton, Button, GUILayout.Width(mTextures.Path.width * GameSettings.UI_SCALE), GUILayout.Height(mTextures.Path.height * GameSettings.UI_SCALE)))
+                        if (
+                            GUILayout.Button(
+                                TextureComButton,
+                                Button,
+                                GUILayout.Width(mTextures.Path.width * GameSettings.UI_SCALE),
+                                GUILayout.Height(mTextures.Path.height * GameSettings.UI_SCALE)
+                            )
+                        )
                             OnClickCompath();
-                        if (GUILayout.Button(TextureReachButton, Button, GUILayout.Width(mTextures.Cone.width * GameSettings.UI_SCALE), GUILayout.Height(mTextures.Cone.height * GameSettings.UI_SCALE)))
+                        if (
+                            GUILayout.Button(
+                                TextureReachButton,
+                                Button,
+                                GUILayout.Width(mTextures.Cone.width * GameSettings.UI_SCALE),
+                                GUILayout.Height(mTextures.Cone.height * GameSettings.UI_SCALE)
+                            )
+                        )
                             OnClickReach();
-                        if (GUILayout.Button(TextureTypeButton, Button, GUILayout.Width(mTextures.OmniDish.width * GameSettings.UI_SCALE), GUILayout.Height(mTextures.OmniDish.height * GameSettings.UI_SCALE)))
+                        if (
+                            GUILayout.Button(
+                                TextureTypeButton,
+                                Button,
+                                GUILayout.Width(mTextures.OmniDish.width * GameSettings.UI_SCALE),
+                                GUILayout.Height(mTextures.OmniDish.height * GameSettings.UI_SCALE)
+                            )
+                        )
                             OnClickType();
-                        if (GUILayout.Button("", StyleStatusButton, GUILayout.Width(mTextures.SatButton.width * GameSettings.UI_SCALE), GUILayout.Height(mTextures.SatButton.height * GameSettings.UI_SCALE)))
+                        if (
+                            GUILayout.Button(
+                                "",
+                                StyleStatusButton,
+                                GUILayout.Width(mTextures.SatButton.width * GameSettings.UI_SCALE),
+                                GUILayout.Height(mTextures.SatButton.height * GameSettings.UI_SCALE)
+                            )
+                        )
                             OnClickStatus();
                     }
                 }
@@ -378,7 +445,9 @@ namespace RemoteTech.UI
             }
             else if (FlightGlobals.ActiveVessel != null)
             {
-                mSatelliteFragment.Satellite = RTCore.Instance.Satellites[FlightGlobals.ActiveVessel.id];
+                mSatelliteFragment.Satellite = RTCore.Instance.Satellites[
+                    FlightGlobals.ActiveVessel.id
+                ];
             }
             else
             {

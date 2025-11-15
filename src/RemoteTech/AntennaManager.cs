@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using RemoteTech.Modules;
 
 namespace RemoteTech
@@ -15,9 +15,18 @@ namespace RemoteTech
         public event Action<IAntenna> OnRegister = delegate { };
         public event Action<IAntenna> OnUnregister = delegate { };
 
-        public IEnumerable<IAntenna> this[ISatellite s] { get { return For(s.Guid); } }
-        public IEnumerable<IAntenna> this[Vessel v] { get { return For(v.id); } }
-        public IEnumerable<IAntenna> this[Guid g] { get { return For(g); } }
+        public IEnumerable<IAntenna> this[ISatellite s]
+        {
+            get { return For(s.Guid); }
+        }
+        public IEnumerable<IAntenna> this[Vessel v]
+        {
+            get { return For(v.id); }
+        }
+        public IEnumerable<IAntenna> this[Guid g]
+        {
+            get { return For(g); }
+        }
 
         private readonly Dictionary<Guid, List<IAntenna>> mLoadedAntennaCache =
             new Dictionary<Guid, List<IAntenna>>();
@@ -63,7 +72,8 @@ namespace RemoteTech
         {
             RTLog.Notify("AntennaManager: Unregister({0})", antenna);
 
-            if (!mLoadedAntennaCache.ContainsKey(key)) return;
+            if (!mLoadedAntennaCache.ContainsKey(key))
+                return;
 
             int instance_id = mLoadedAntennaCache[key].FindIndex(x => x == antenna);
             if (instance_id != -1)
@@ -90,11 +100,14 @@ namespace RemoteTech
             Guid key = v.id;
             RTLog.Notify("AntennaManager: RegisterProtos({0}, {1})", v.vesselName, key);
 
-            if (mLoadedAntennaCache.ContainsKey(key)) return;
+            if (mLoadedAntennaCache.ContainsKey(key))
+                return;
 
             foreach (ProtoPartSnapshot pps in v.protoVessel.protoPartSnapshots)
             {
-                foreach (ProtoPartModuleSnapshot ppms in pps.modules.Where(ppms => ppms.IsAntenna()))
+                foreach (
+                    ProtoPartModuleSnapshot ppms in pps.modules.Where(ppms => ppms.IsAntenna())
+                )
                 {
                     if (!mProtoAntennaCache.ContainsKey(key))
                     {
@@ -111,7 +124,8 @@ namespace RemoteTech
         {
             RTLog.Notify("AntennaManager: UnregisterProtos({0})", key);
 
-            if (!mProtoAntennaCache.ContainsKey(key)) return;
+            if (!mProtoAntennaCache.ContainsKey(key))
+                return;
 
             foreach (IAntenna a in mProtoAntennaCache[key])
             {
@@ -144,8 +158,10 @@ namespace RemoteTech
 
         public IEnumerator<IAntenna> GetEnumerator()
         {
-            return mLoadedAntennaCache.Values.SelectMany(l => l).Concat(
-                   mProtoAntennaCache.Values.SelectMany(l => l)).GetEnumerator();
+            return mLoadedAntennaCache
+                .Values.SelectMany(l => l)
+                .Concat(mProtoAntennaCache.Values.SelectMany(l => l))
+                .GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -158,16 +174,16 @@ namespace RemoteTech
     {
         public static bool IsAntenna(this ProtoPartModuleSnapshot ppms)
         {
-            return ppms.GetBool("IsRTAntenna") &&
-                   ppms.GetBool("IsRTPowered") &&
-                   ppms.GetBool("IsRTActive");
+            return ppms.GetBool("IsRTAntenna")
+                && ppms.GetBool("IsRTPowered")
+                && ppms.GetBool("IsRTActive");
         }
 
         public static bool IsAntenna(this PartModule pm)
         {
-            return pm.Fields.GetValue<bool>("IsRTAntenna") &&
-                   pm.Fields.GetValue<bool>("IsRTPowered") &&
-                   pm.Fields.GetValue<bool>("IsRTActive");
+            return pm.Fields.GetValue<bool>("IsRTAntenna")
+                && pm.Fields.GetValue<bool>("IsRTPowered")
+                && pm.Fields.GetValue<bool>("IsRTActive");
         }
     }
 }

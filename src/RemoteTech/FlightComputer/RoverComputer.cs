@@ -7,15 +7,16 @@ namespace RemoteTech.FlightComputer
     {
         private const float driveLimit = 1.0f;
         private const double minRadarAlt = 2.0; // in meters
-        private double Kp, Ki, Kd;
+        private double Kp,
+            Ki,
+            Kd;
 
         private Vessel mVessel;
         private PIDLoop throttlePID;
         private PIDLoop steerPID;
         private PIDController pidController;
 
-        private float
-            mRoverAlt,
+        private float mRoverAlt,
             mRoverLat,
             mRoverLon,
             mTargetLat,
@@ -33,12 +34,24 @@ namespace RemoteTech.FlightComputer
             get
             {
                 Vector3d up = (mVessel.CoM - mVessel.mainBody.position).normalized;
-                Vector3d north = Vector3d.Exclude(up, (mVessel.mainBody.position + mVessel.mainBody.transform.up * (float)mVessel.mainBody.Radius) - mVessel.CoM).normalized;
+                Vector3d north = Vector3d
+                    .Exclude(
+                        up,
+                        (
+                            mVessel.mainBody.position
+                            + mVessel.mainBody.transform.up * (float)mVessel.mainBody.Radius
+                        ) - mVessel.CoM
+                    )
+                    .normalized;
 
                 if (ForwardAxis == Vector3.zero)
                     return RTUtil.GetHeading(mVessel.srf_velocity.normalized, up, north);
                 else
-                    return RTUtil.GetHeading(mVessel.ReferenceTransform.TransformDirection(ForwardAxis), up, north);
+                    return RTUtil.GetHeading(
+                        mVessel.ReferenceTransform.TransformDirection(ForwardAxis),
+                        up,
+                        north
+                    );
             }
         }
 
@@ -47,7 +60,15 @@ namespace RemoteTech.FlightComputer
             get
             {
                 Vector3d up = (mVessel.CoM - mVessel.mainBody.position).normalized;
-                Vector3d north = Vector3d.Exclude(up, (mVessel.mainBody.position + mVessel.mainBody.transform.up * (float)mVessel.mainBody.Radius) - mVessel.CoM).normalized;
+                Vector3d north = Vector3d
+                    .Exclude(
+                        up,
+                        (
+                            mVessel.mainBody.position
+                            + mVessel.mainBody.transform.up * (float)mVessel.mainBody.Radius
+                        ) - mVessel.CoM
+                    )
+                    .normalized;
                 return RTUtil.GetHeading((TargetPos - mVessel.CoM).normalized, up, north);
             }
         }
@@ -56,7 +77,11 @@ namespace RemoteTech.FlightComputer
         {
             get
             {
-                return mVessel.mainBody.GetWorldSurfacePosition(mTargetLat, mTargetLon, mVessel.altitude);
+                return mVessel.mainBody.GetWorldSurfacePosition(
+                    mTargetLat,
+                    mTargetLon,
+                    mVessel.altitude
+                );
             }
         }
 
@@ -75,7 +100,10 @@ namespace RemoteTech.FlightComputer
                 if (ForwardAxis == Vector3.zero)
                     return (float)mVessel.srf_velocity.magnitude;
                 else
-                    return Vector3.Dot(mVessel.srf_velocity, mVessel.ReferenceTransform.TransformDirection(ForwardAxis));
+                    return Vector3.Dot(
+                        mVessel.srf_velocity,
+                        mVessel.ReferenceTransform.TransformDirection(ForwardAxis)
+                    );
             }
         }
 
@@ -104,26 +132,28 @@ namespace RemoteTech.FlightComputer
             }
 
             ForwardAxis = Vector3.zero;
-            mRoverAlt = (float) mVessel.altitude;
-            mRoverLat = (float) mVessel.latitude;
-            mRoverLon = (float) mVessel.longitude;
+            mRoverAlt = (float)mVessel.altitude;
+            mRoverLat = (float)mVessel.latitude;
+            mRoverLon = (float)mVessel.longitude;
             Delta = 0;
             DeltaT = 0;
 
             /* Explanation on targetRotation
-             * Quaternion.Euler(x,y,z) - Returns a rotation that rotates z degrees around the z axis, 
+             * Quaternion.Euler(x,y,z) - Returns a rotation that rotates z degrees around the z axis,
              *                           x degrees around the x axis, and y degrees around the y axis
              *                           in that order.
-             * 
-             * Unity Q.Euler(0,0,0) isn't matched to KSP's rotation "(0,0,0)" (-90, varying UP-axis, 90) so need to 
+             *
+             * Unity Q.Euler(0,0,0) isn't matched to KSP's rotation "(0,0,0)" (-90, varying UP-axis, 90) so need to
              * match the target rotation to the KSP's rotation.
-             * 
+             *
              * Rover-specific rotation is Forward (y) to HDG 0, Up (x) to North and
              * Right (z) to East.
              */
-            const float KSPRotXAxis = -90f, KSPRotZAxis = 90f;
-            double AngleFromUpAxis = Mathf.Rad2Deg * Math.Atan(-mVessel.upAxis.z / -mVessel.upAxis.x);
-            float KSPRotYAxis = (float) -AngleFromUpAxis;
+            const float KSPRotXAxis = -90f,
+                KSPRotZAxis = 90f;
+            double AngleFromUpAxis =
+                Mathf.Rad2Deg * Math.Atan(-mVessel.upAxis.z / -mVessel.upAxis.x);
+            float KSPRotYAxis = (float)-AngleFromUpAxis;
 
             switch (dc.mode)
             {
@@ -134,12 +164,20 @@ namespace RemoteTech.FlightComputer
                     targetRotation = Quaternion.Euler(KSPRotXAxis, KSPRotYAxis, KSPRotZAxis);
                     break;
                 case RemoteTech.FlightComputer.Commands.DriveCommand.DriveMode.DistanceHeading:
-                    targetRotation = Quaternion.Euler(KSPRotXAxis - dc.target2, KSPRotYAxis, KSPRotZAxis);
+                    targetRotation = Quaternion.Euler(
+                        KSPRotXAxis - dc.target2,
+                        KSPRotYAxis,
+                        KSPRotZAxis
+                    );
                     break;
                 case RemoteTech.FlightComputer.Commands.DriveCommand.DriveMode.Coord:
                     mTargetLat = dc.target;
                     mTargetLon = dc.target2;
-                    targetRotation = Quaternion.Euler(KSPRotXAxis - TargetHDG, KSPRotYAxis, KSPRotZAxis);
+                    targetRotation = Quaternion.Euler(
+                        KSPRotXAxis - TargetHDG,
+                        KSPRotYAxis,
+                        KSPRotZAxis
+                    );
                     break;
             }
 
@@ -156,9 +194,21 @@ namespace RemoteTech.FlightComputer
             {
                 if (mVessel.srf_velocity.magnitude > 0.5)
                 {
-                    float degForward = Mathf.Abs(RTUtil.ClampDegrees90(Vector3.Angle(mVessel.srf_velocity, mVessel.ReferenceTransform.forward)));
-                    float degUp = Mathf.Abs(RTUtil.ClampDegrees90(Vector3.Angle(mVessel.srf_velocity, mVessel.ReferenceTransform.up)));
-                    float degRight = Mathf.Abs(RTUtil.ClampDegrees90(Vector3.Angle(mVessel.srf_velocity, mVessel.ReferenceTransform.right)));
+                    float degForward = Mathf.Abs(
+                        RTUtil.ClampDegrees90(
+                            Vector3.Angle(mVessel.srf_velocity, mVessel.ReferenceTransform.forward)
+                        )
+                    );
+                    float degUp = Mathf.Abs(
+                        RTUtil.ClampDegrees90(
+                            Vector3.Angle(mVessel.srf_velocity, mVessel.ReferenceTransform.up)
+                        )
+                    );
+                    float degRight = Mathf.Abs(
+                        RTUtil.ClampDegrees90(
+                            Vector3.Angle(mVessel.srf_velocity, mVessel.ReferenceTransform.right)
+                        )
+                    );
 
                     if (degForward < degUp && degForward < degRight)
                         ForwardAxis = Vector3.forward;
@@ -205,7 +255,10 @@ namespace RemoteTech.FlightComputer
             }
         }
 
-        private bool Distance(RemoteTech.FlightComputer.Commands.DriveCommand dc, FlightCtrlState fs)
+        private bool Distance(
+            RemoteTech.FlightComputer.Commands.DriveCommand dc,
+            FlightCtrlState fs
+        )
         {
             Delta = Math.Abs(dc.target) - Vector3.Distance(RoverOrigPos, mVessel.CoM);
             DeltaT = Delta / Math.Abs(RoverSpeed);
@@ -232,7 +285,10 @@ namespace RemoteTech.FlightComputer
             }
         }
 
-        private bool DistanceHeading(RemoteTech.FlightComputer.Commands.DriveCommand dc, FlightCtrlState fs)
+        private bool DistanceHeading(
+            RemoteTech.FlightComputer.Commands.DriveCommand dc,
+            FlightCtrlState fs
+        )
         {
             Delta = Math.Abs(dc.target) - Vector3.Distance(RoverOrigPos, mVessel.CoM);
             DeltaT = Delta / RoverSpeed;
@@ -243,15 +299,21 @@ namespace RemoteTech.FlightComputer
                 if (ForwardAxis != Vector3.zero)
                 {
                     Vector3d actuation = pidController.GetActuation(targetRotation);
-                    float steeringOutput = (float)-steerPID.Update(RTUtil.AngleBetween(RoverHDG, dc.target2), 0, -1.0, 1.0);
-                    
+                    float steeringOutput = (float)
+                        -steerPID.Update(RTUtil.AngleBetween(RoverHDG, dc.target2), 0, -1.0, 1.0);
+
                     if (mVessel.radarAltitude > minRadarAlt)
                     {
                         fs.pitch = Mathf.Clamp((float)actuation.x, -driveLimit, driveLimit);
                         fs.roll = Mathf.Clamp((float)actuation.y, -driveLimit, driveLimit);
                     }
                     fs.yaw = Mathf.Clamp((float)actuation.z, -driveLimit, driveLimit); //keep if u want jet car
-                    fs.wheelSteer = SmoothenWheelSteering(RTUtil.AngleBetween(RoverHDG, dc.target2), steeringOutput, -dc.steering, dc.steering);
+                    fs.wheelSteer = SmoothenWheelSteering(
+                        RTUtil.AngleBetween(RoverHDG, dc.target2),
+                        steeringOutput,
+                        -dc.steering,
+                        dc.steering
+                    );
                 }
                 return false;
             }
@@ -276,7 +338,8 @@ namespace RemoteTech.FlightComputer
                 if (ForwardAxis != Vector3.zero)
                 {
                     Vector3d actuation = pidController.GetActuation(targetRotation);
-                    float steeringOutput = (float) -steerPID.Update(RTUtil.AngleBetween(RoverHDG, TargetHDG), -1.0, 1.0);
+                    float steeringOutput = (float)
+                        -steerPID.Update(RTUtil.AngleBetween(RoverHDG, TargetHDG), -1.0, 1.0);
 
                     if (mVessel.radarAltitude > minRadarAlt)
                     {
@@ -284,7 +347,12 @@ namespace RemoteTech.FlightComputer
                         fs.roll = Mathf.Clamp((float)actuation.y, -driveLimit, driveLimit);
                     }
                     fs.yaw = Mathf.Clamp((float)actuation.z, -driveLimit, driveLimit); //keep if u want jet car
-                    fs.wheelSteer = SmoothenWheelSteering(RTUtil.AngleBetween(RoverHDG, TargetHDG), steeringOutput, -dc.steering, dc.steering);
+                    fs.wheelSteer = SmoothenWheelSteering(
+                        RTUtil.AngleBetween(RoverHDG, TargetHDG),
+                        steeringOutput,
+                        -dc.steering,
+                        dc.steering
+                    );
                 }
                 return false;
             }
@@ -298,7 +366,12 @@ namespace RemoteTech.FlightComputer
             }
         }
 
-        private float SmoothenWheelSteering(float angleBetweenHDGs, float outputSteer, float maxLeftSteerLimit, float maxRightSteerLimit)
+        private float SmoothenWheelSteering(
+            float angleBetweenHDGs,
+            float outputSteer,
+            float maxLeftSteerLimit,
+            float maxRightSteerLimit
+        )
         {
             angleBetweenHDGs = Math.Abs(angleBetweenHDGs);
 

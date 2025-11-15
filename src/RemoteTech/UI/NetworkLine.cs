@@ -1,5 +1,5 @@
-﻿using RemoteTech.SimpleTypes;
-using System.Linq;
+﻿using System.Linq;
+using RemoteTech.SimpleTypes;
 using UnityEngine;
 
 namespace RemoteTech.UI
@@ -10,28 +10,19 @@ namespace RemoteTech.UI
 
         public BidirectionalEdge<ISatellite> Edge
         {
-            set
-            {
-                UpdateMesh(value);
-            }
+            set { UpdateMesh(value); }
         }
 
         public float LineWidth { get; set; }
 
         public Material Material
         {
-            set
-            {
-                mRenderer.material = value;
-            }
+            set { mRenderer.material = value; }
         }
 
         public Color Color
         {
-            set
-            {
-                mMeshFilter.mesh.colors = Enumerable.Repeat(value, 4).ToArray();
-            }
+            set { mMeshFilter.mesh.colors = Enumerable.Repeat(value, 4).ToArray(); }
         }
 
         public bool Active
@@ -55,7 +46,10 @@ namespace RemoteTech.UI
 
         public void Awake()
         {
-            if (CommNetMaterial == null) { CommNetMaterial = Resources.Load<Material>("Telemetry/TelemetryMaterial"); }
+            if (CommNetMaterial == null)
+            {
+                CommNetMaterial = Resources.Load<Material>("Telemetry/TelemetryMaterial");
+            }
 
             SetupMesh();
             gameObject.layer = 31;
@@ -71,13 +65,20 @@ namespace RemoteTech.UI
             var start = camera.WorldToScreenPoint(ScaledSpace.LocalToScaledSpace(edge.A.Position));
             var end = camera.WorldToScreenPoint(ScaledSpace.LocalToScaledSpace(edge.B.Position));
 
-            var segment = new Vector3(end.y - start.y, start.x - end.x, 0).normalized * (LineWidth / 2);
+            var segment =
+                new Vector3(end.y - start.y, start.x - end.x, 0).normalized * (LineWidth / 2);
 
             if (!MapView.Draw3DLines)
             {
-                //if position is behind camera 
-                if (start.z < 0) { start = NetworkLine.FlipDirection(start, end); } 
-                else if (end.z < 0) { end = NetworkLine.FlipDirection(end, start); }
+                //if position is behind camera
+                if (start.z < 0)
+                {
+                    start = NetworkLine.FlipDirection(start, end);
+                }
+                else if (end.z < 0)
+                {
+                    end = NetworkLine.FlipDirection(end, start);
+                }
 
                 var dist = Screen.height / 2 + 0.01f;
                 start.z = start.z >= 0.15f ? dist : -dist;
@@ -95,7 +96,7 @@ namespace RemoteTech.UI
                 mPoints3D[2] = camera.ScreenToWorldPoint(end - segment);
                 mPoints3D[3] = camera.ScreenToWorldPoint(end + segment);
             }
-            
+
             mMeshFilter.mesh.vertices = MapView.Draw3DLines ? mPoints3D : mPoints2D;
             mMeshFilter.mesh.RecalculateBounds();
             mMeshFilter.mesh.MarkDynamic();
@@ -108,7 +109,13 @@ namespace RemoteTech.UI
             mRenderer = gameObject.AddComponent<MeshRenderer>();
             mMeshFilter.mesh.name = "NetworkLine";
             mMeshFilter.mesh.vertices = new Vector3[4];
-            mMeshFilter.mesh.uv = new Vector2[4] { new Vector2(0, 1), new Vector2(0, 0), new Vector2(1, 1), new Vector2(1, 0) };
+            mMeshFilter.mesh.uv = new Vector2[4]
+            {
+                new Vector2(0, 1),
+                new Vector2(0, 0),
+                new Vector2(1, 1),
+                new Vector2(1, 0),
+            };
             mMeshFilter.mesh.SetIndices(new int[] { 0, 2, 1, 2, 3, 1 }, MeshTopology.Triangles, 0);
             Active = false;
         }

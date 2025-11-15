@@ -14,16 +14,17 @@ namespace RemoteTech
         LVL3,
         LVL4,
         API,
-        Assembly
+        Assembly,
     };
 
     public static class RTLog
     {
-
         /// <summary>On true the verbose-Methods will notify their messages</summary>
         private static readonly bool verboseLogging;
+
         /// <summary>debug log list</summary>
-        public static readonly Dictionary<RTLogLevel, List<string>> RTLogList = new Dictionary<RTLogLevel, List<string>>();
+        public static readonly Dictionary<RTLogLevel, List<string>> RTLogList =
+            new Dictionary<RTLogLevel, List<string>>();
 
         static RTLog()
         {
@@ -42,9 +43,9 @@ namespace RemoteTech
 #endif
             #endregion
         }
-        
+
         /// <summary>
-        /// Notify a message to the log. In debug mode the message will also be logged 
+        /// Notify a message to the log. In debug mode the message will also be logged
         /// to the <paramref name="logLevel"/> list.
         /// </summary>
         /// <param name="message">Message to log</param>
@@ -54,7 +55,7 @@ namespace RemoteTech
 #if !DEBUG
             if (logLevel != RTLogLevel.API && logLevel != RTLogLevel.Assembly)
 #endif
-                UnityEngine.Debug.Log("[RemoteTech] " + message);
+            UnityEngine.Debug.Log("[RemoteTech] " + message);
 
             #region ON-DEBUGMODE
 #if DEBUG
@@ -82,7 +83,11 @@ namespace RemoteTech
         /// <param name="message">Message to log with format items</param>
         /// <param name="logLevel">Loglevel for debugging</param>
         /// <param name="param">objects to format</param>
-        public static void Notify(string message, RTLogLevel logLevel = RTLogLevel.LVL1, params object[] param)
+        public static void Notify(
+            string message,
+            RTLogLevel logLevel = RTLogLevel.LVL1,
+            params object[] param
+        )
         {
             Notify(string.Format(message, param), logLevel);
         }
@@ -111,7 +116,11 @@ namespace RemoteTech
         /// <param name="message">Message to log</param>
         /// <param name="logLevel">Loglevel for debugging</param>
         /// <param name="param">objects to format</param>
-        public static void Verbose(string message, RTLogLevel logLevel = RTLogLevel.LVL1, params object[] param)
+        public static void Verbose(
+            string message,
+            RTLogLevel logLevel = RTLogLevel.LVL1,
+            params object[] param
+        )
         {
             Verbose(string.Format(message, param), logLevel);
         }

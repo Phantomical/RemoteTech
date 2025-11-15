@@ -5,24 +5,19 @@ namespace RemoteTech.FlightComputer.Commands
 {
     public class StockAutopilotCommand : AbstractCommand
     {
-        [Persistent] public AutopilotMode AutopilotMode;
+        [Persistent]
+        public AutopilotMode AutopilotMode;
         public static VesselAutopilotUI UIreference = null;
         private static AutopilotMode savedAutopilotMode = AutopilotMode.StabilityAssist;
 
         public override string ShortName
         {
-            get
-            {
-                return AutopilotMode.ToString();
-            }
+            get { return AutopilotMode.ToString(); }
         }
 
         public override string Description
         {
-            get
-            {
-                return "Autopilot: " + ShortName + Environment.NewLine + base.Description;
-            }
+            get { return "Autopilot: " + ShortName + Environment.NewLine + base.Description; }
         }
 
         public override bool Pop(FlightComputer f)
@@ -76,27 +71,42 @@ namespace RemoteTech.FlightComputer.Commands
         {
             if (!flightCom.Vessel.Autopilot.Enabled) // autopilot is off
             {
-                if(savedAutopilotMode != AutopilotMode.StabilityAssist)
-                    savedAutopilotMode = AutopilotMode.StabilityAssist; // matched to KSP's default to SAS mode when turned on 
+                if (savedAutopilotMode != AutopilotMode.StabilityAssist)
+                    savedAutopilotMode = AutopilotMode.StabilityAssist; // matched to KSP's default to SAS mode when turned on
                 return false;
             }
 
-            if (flightCom.Vessel.Autopilot.Mode != savedAutopilotMode && flightCom.Vessel.Autopilot.CanSetMode(savedAutopilotMode))
+            if (
+                flightCom.Vessel.Autopilot.Mode != savedAutopilotMode
+                && flightCom.Vessel.Autopilot.CanSetMode(savedAutopilotMode)
+            )
                 flightCom.Vessel.Autopilot.SetMode(savedAutopilotMode); // purpose: return to the pre-click mode
 
-            if (GameSettings.PITCH_DOWN.GetKey() || GameSettings.PITCH_UP.GetKey() ||
-                GameSettings.ROLL_LEFT.GetKey() || GameSettings.ROLL_RIGHT.GetKey() ||
-                GameSettings.YAW_LEFT.GetKey() || GameSettings.YAW_RIGHT.GetKey()) // player trying to manually rotate
+            if (
+                GameSettings.PITCH_DOWN.GetKey()
+                || GameSettings.PITCH_UP.GetKey()
+                || GameSettings.ROLL_LEFT.GetKey()
+                || GameSettings.ROLL_RIGHT.GetKey()
+                || GameSettings.YAW_LEFT.GetKey()
+                || GameSettings.YAW_RIGHT.GetKey()
+            ) // player trying to manually rotate
                 return false;
 
-            if (GameSettings.TRANSLATE_FWD.GetKey() || GameSettings.TRANSLATE_BACK.GetKey() ||
-                GameSettings.TRANSLATE_LEFT.GetKey() || GameSettings.TRANSLATE_RIGHT.GetKey() ||
-                GameSettings.TRANSLATE_UP.GetKey() || GameSettings.TRANSLATE_DOWN.GetKey()) // player trying to manually translate
+            if (
+                GameSettings.TRANSLATE_FWD.GetKey()
+                || GameSettings.TRANSLATE_BACK.GetKey()
+                || GameSettings.TRANSLATE_LEFT.GetKey()
+                || GameSettings.TRANSLATE_RIGHT.GetKey()
+                || GameSettings.TRANSLATE_UP.GetKey()
+                || GameSettings.TRANSLATE_DOWN.GetKey()
+            ) // player trying to manually translate
                 return false;
 
-            if (!GameSettings.AXIS_PITCH.IsNeutral() || 
-                !GameSettings.AXIS_ROLL.IsNeutral() ||
-                !GameSettings.AXIS_YAW.IsNeutral()) // player trying to joystick
+            if (
+                !GameSettings.AXIS_PITCH.IsNeutral()
+                || !GameSettings.AXIS_ROLL.IsNeutral()
+                || !GameSettings.AXIS_YAW.IsNeutral()
+            ) // player trying to joystick
                 return false;
 
             return true;

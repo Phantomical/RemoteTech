@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using UnityEngine;
 using KSP.Localization;
+using UnityEngine;
 
 namespace RemoteTech.UI
 {
@@ -10,7 +10,14 @@ namespace RemoteTech.UI
         public ISatellite Satellite
         {
             get { return mSatellite; }
-            set { if (mSatellite != value) { mSatellite = value; Antenna = null; } }
+            set
+            {
+                if (mSatellite != value)
+                {
+                    mSatellite = value;
+                    Antenna = null;
+                }
+            }
         }
 
         public IAntenna Antenna { get; private set; }
@@ -34,20 +41,30 @@ namespace RemoteTech.UI
 
         public void Draw()
         {
-            if (Satellite == null) return;
+            if (Satellite == null)
+                return;
 
             GUILayout.BeginHorizontal();
             {
                 GUILayout.TextField(Satellite.Name.Truncate(25), GUILayout.ExpandWidth(true));
-                RTUtil.Button(Localizer.Format("#RT_NetworkFB_NameButton"), () =>//"Name"
-                {
-                    var vessel = RTUtil.GetVesselById(Satellite.Guid);
-                    if (vessel) vessel.RenameVessel();
-                }, GUILayout.ExpandWidth(false), GUILayout.Height(24));
+                RTUtil.Button(
+                    Localizer.Format("#RT_NetworkFB_NameButton"),
+                    () => //"Name"
+                    {
+                        var vessel = RTUtil.GetVesselById(Satellite.Guid);
+                        if (vessel)
+                            vessel.RenameVessel();
+                    },
+                    GUILayout.ExpandWidth(false),
+                    GUILayout.Height(24)
+                );
             }
             GUILayout.EndHorizontal();
 
-            mScrollPosition = GUILayout.BeginScrollView(mScrollPosition, GUILayout.ExpandHeight(true));
+            mScrollPosition = GUILayout.BeginScrollView(
+                mScrollPosition,
+                GUILayout.ExpandHeight(true)
+            );
             {
                 Color pushColor = GUI.contentColor;
                 TextAnchor pushAlign = GUI.skin.button.alignment;
@@ -55,11 +72,20 @@ namespace RemoteTech.UI
                 foreach (var a in Satellite.Antennas.Where(a => a.CanTarget))
                 {
                     GUI.contentColor = (a.Powered) ? XKCDColors.ElectricLime : XKCDColors.Scarlet;
-                    String text = a.Name.Truncate(25) + Environment.NewLine + Localizer.Format("#RT_NetworkFB_Target") + RTUtil.TargetName(a.Target).Truncate(18);//"Target: "
-                    RTUtil.StateButton(text, Antenna, a, s =>
-                    {
-                        Antenna = (s > 0) ? a : null;
-                    });
+                    String text =
+                        a.Name.Truncate(25)
+                        + Environment.NewLine
+                        + Localizer.Format("#RT_NetworkFB_Target")
+                        + RTUtil.TargetName(a.Target).Truncate(18); //"Target: "
+                    RTUtil.StateButton(
+                        text,
+                        Antenna,
+                        a,
+                        s =>
+                        {
+                            Antenna = (s > 0) ? a : null;
+                        }
+                    );
                 }
                 GUI.skin.button.alignment = pushAlign;
                 GUI.contentColor = pushColor;
@@ -69,7 +95,8 @@ namespace RemoteTech.UI
 
         private void Refresh(ISatellite sat)
         {
-            if (sat == Satellite) Satellite = null;
+            if (sat == Satellite)
+                Satellite = null;
         }
     }
 }

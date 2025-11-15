@@ -17,9 +17,9 @@ namespace RemoteTech.SimpleTypes
         public EarthTimeStringConverter()
         {
             this.SecondsPerYear = 31536000; // = 365d
-            this.SecondsPerDay = 86400;     // = 24h
-            this.SecondsPerHour = 3600;     // = 60m
-            this.SecondsPerMinute = 60;     // = 60s
+            this.SecondsPerDay = 86400; // = 24h
+            this.SecondsPerHour = 3600; // = 60m
+            this.SecondsPerMinute = 60; // = 60s
         }
     }
 
@@ -35,10 +35,10 @@ namespace RemoteTech.SimpleTypes
         /// </summary>
         public KerbinTimeStringConverter()
         {
-            this.SecondsPerYear = 9201600;  // = 426d
-            this.SecondsPerDay = 21600;     // = 6h
-            this.SecondsPerHour = 3600;     // = 60m
-            this.SecondsPerMinute = 60;     // = 60s
+            this.SecondsPerYear = 9201600; // = 426d
+            this.SecondsPerDay = 21600; // = 6h
+            this.SecondsPerHour = 3600; // = 60m
+            this.SecondsPerMinute = 60; // = 60s
         }
     }
 
@@ -52,28 +52,35 @@ namespace RemoteTech.SimpleTypes
         /// Get the seconds for one year
         /// </summary>
         protected uint SecondsPerYear;
+
         /// <summary>
         /// Get the seconds for one day
         /// </summary>
         protected uint SecondsPerDay;
+
         /// <summary>
         /// Get the seconds for one hour
         /// </summary>
         protected uint SecondsPerHour;
+
         /// <summary>
         /// Get the seconds for one minute
         /// </summary>
         protected uint SecondsPerMinute;
+
         /// <summary>
         /// Expression for parsing the time string
         /// </summary>
         private static readonly Regex DurationRegex = new Regex(
-            String.Format("{0}?{1}?{2}?{3}?{4}?",
+            String.Format(
+                "{0}?{1}?{2}?{3}?{4}?",
                 @"(?:(?<seconds>\d*\.?\d+)\s*s[a-z]*[,\s]*)",
                 @"(?:(?<minutes>\d*\.?\d+)\s*m[a-z]*[,\s]*)",
                 @"(?:(?<hours>\d*\.?\d+)\s*h[a-z]*[,\s]*)",
                 @"(?:(?<days>\d*\.?\d+)\s*d[a-z]*[,\s]*)",
-                @"(?:(?<years>\d*\.?\d+)\s*y[a-z]*[,\s]*)"));
+                @"(?:(?<years>\d*\.?\d+)\s*y[a-z]*[,\s]*)"
+            )
+        );
 
         /// <summary>
         /// This method will parse a time string like "1d 2m 3s" and returns the
@@ -96,11 +103,13 @@ namespace RemoteTech.SimpleTypes
                 }
                 if (match.Groups["minutes"].Success)
                 {
-                    timeInSeconds += Double.Parse(match.Groups["minutes"].Value) * this.SecondsPerMinute;
+                    timeInSeconds +=
+                        Double.Parse(match.Groups["minutes"].Value) * this.SecondsPerMinute;
                 }
                 if (match.Groups["hours"].Success)
                 {
-                    timeInSeconds += Double.Parse(match.Groups["hours"].Value) * this.SecondsPerHour;
+                    timeInSeconds +=
+                        Double.Parse(match.Groups["hours"].Value) * this.SecondsPerHour;
                 }
                 if (match.Groups["days"].Success)
                 {
@@ -108,7 +117,8 @@ namespace RemoteTech.SimpleTypes
                 }
                 if (match.Groups["years"].Success)
                 {
-                    timeInSeconds += Double.Parse(match.Groups["years"].Value) * this.SecondsPerYear;
+                    timeInSeconds +=
+                        Double.Parse(match.Groups["years"].Value) * this.SecondsPerYear;
                 }
             }
 
@@ -152,7 +162,6 @@ namespace RemoteTech.SimpleTypes
             if (time >= this.SecondsPerMinute)
                 time = this.calcFromSecondsToSring(time, s, this.SecondsPerMinute, "m");
 
-
             if (withMicroSecs)
             {
                 s.Append(time.ToString("F2"));
@@ -174,7 +183,12 @@ namespace RemoteTech.SimpleTypes
         /// <param name="baseSeconds">Base for the calculation</param>
         /// <param name="prefix">Will be appand to the string builder</param>
         /// <returns>The remaining seconds</returns>
-        private Double calcFromSecondsToSring(Double time, StringBuilder appandTo, uint baseSeconds, String prefix)
+        private Double calcFromSecondsToSring(
+            Double time,
+            StringBuilder appandTo,
+            uint baseSeconds,
+            String prefix
+        )
         {
             appandTo.Append(Math.Floor(time / baseSeconds));
             appandTo.Append(prefix);

@@ -1,6 +1,6 @@
 ﻿using System;
-using UnityEngine;
 using KSP.Localization;
+using UnityEngine;
 
 namespace RemoteTech.UI
 {
@@ -22,23 +22,25 @@ namespace RemoteTech.UI
         private readonly PIDControllerFragment mPID;
         private bool mQueueEnabled;
         private FlightComputer.FlightComputer mFlightComputer;
-        private readonly String tabModeDescString = Localizer.Format("#RT_FC_desc");//"Switch to Attitude, Rover, Power or PID mode."
-        private static readonly String appTitle = Localizer.Format("#RT_FC_Title");//"Flight Computer"
+        private readonly String tabModeDescString = Localizer.Format("#RT_FC_desc"); //"Switch to Attitude, Rover, Power or PID mode."
+        private static readonly String appTitle = Localizer.Format("#RT_FC_Title"); //"Flight Computer"
 
         private FragmentTab Tab
         {
-            get
-            {
-                return mTab;
-            }
+            get { return mTab; }
             set
             {
                 int NumberOfTabs = 4;
-                if ((int)value >= NumberOfTabs) {
+                if ((int)value >= NumberOfTabs)
+                {
                     mTab = (FragmentTab)0;
-                } else if ((int)value < 0) {
+                }
+                else if ((int)value < 0)
+                {
                     mTab = (FragmentTab)(NumberOfTabs - 1);
-                } else {
+                }
+                else
+                {
                     mTab = value;
                 }
             }
@@ -59,7 +61,7 @@ namespace RemoteTech.UI
 
         public override void Show()
         {
-            Position.x= RTSettings.Instance.FCWinPosX;
+            Position.x = RTSettings.Instance.FCWinPosX;
             Position.y = RTSettings.Instance.FCWinPosY;
 
             base.Show();
@@ -88,7 +90,8 @@ namespace RemoteTech.UI
             {
                 GUILayout.BeginHorizontal();
                 {
-                    switch (mTab) {
+                    switch (mTab)
+                    {
                         case FragmentTab.Attitude:
                             mAttitude.Draw();
                             break;
@@ -106,16 +109,21 @@ namespace RemoteTech.UI
                 GUILayout.EndHorizontal();
 
                 // Switch FC mode
-                if (GUI.Button(new Rect(2, 2, 16, 16), new GUIContent("<", tabModeDescString))) {
+                if (GUI.Button(new Rect(2, 2, 16, 16), new GUIContent("<", tabModeDescString)))
+                {
                     Tab--;
                 }
-                if (GUI.Button(new Rect(16, 2, 16, 16), new GUIContent(">", tabModeDescString))) {
+                if (GUI.Button(new Rect(16, 2, 16, 16), new GUIContent(">", tabModeDescString)))
+                {
                     Tab++;
                 }
 
-                if (mQueueEnabled) {
+                if (mQueueEnabled)
+                {
                     mQueue.Draw();
-                } else {
+                }
+                else
+                {
                     GUILayout.BeginVertical();
                     {
                         GUILayout.BeginScrollView(Vector2.zero, GUILayout.ExpandHeight(true));
@@ -131,15 +139,20 @@ namespace RemoteTech.UI
         private void OnQueue()
         {
             mQueueEnabled = !mQueueEnabled;
-            if(mQueueEnabled)
+            if (mQueueEnabled)
             {
-                this.Title = appTitle + ": " + mFlightComputer.Vessel.vesselName.Substring(0, Math.Min(25, mFlightComputer.Vessel.vesselName.Length));
+                this.Title =
+                    appTitle
+                    + ": "
+                    + mFlightComputer.Vessel.vesselName.Substring(
+                        0,
+                        Math.Min(25, mFlightComputer.Vessel.vesselName.Length)
+                    );
             }
             else
             {
                 this.Title = appTitle;
             }
-
         }
     }
 }

@@ -1,15 +1,12 @@
-﻿using RemoteTech.SimpleTypes;
-using System;
-using System.Reflection;
-
+﻿using System;
 // required by KAC
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-
+using System.Reflection;
 using RemoteTech_KACWrapper;
-
+using RemoteTech.SimpleTypes;
 
 namespace RemoteTech.AddOns
 {
@@ -26,10 +23,12 @@ namespace RemoteTech.AddOns
                 return;
 
             KACWrapper.InitKACWrapper();
-            var message = KACWrapper.APIReady ? "KerbalAlarmClockAddon.loadInstance: Successfully loaded KAC!" : "KerbalAlarmClockAddon.loadInstance: Couldn't load Instance.";
+            var message = KACWrapper.APIReady
+                ? "KerbalAlarmClockAddon.loadInstance: Successfully loaded KAC!"
+                : "KerbalAlarmClockAddon.loadInstance: Couldn't load Instance.";
             RTLog.Verbose(message, RTLogLevel.Assembly);
         }
-       
+
         /// <summary>
         /// Create a new Alarm
         /// </summary>
@@ -38,7 +37,12 @@ namespace RemoteTech.AddOns
         /// <param name="UT">Universal Time for the alarm</param>
         /// <param name="vesselId">The id of the vessel for which to set an alarm.</param>
         /// <returns>ID of the newly created alarm or string.empty if alarm couldn't be created.</returns>
-        public string CreateAlarm(KACWrapper.KACAPI.AlarmTypeEnum alarmType, string name, double UT, Guid vesselId)
+        public string CreateAlarm(
+            KACWrapper.KACAPI.AlarmTypeEnum alarmType,
+            string name,
+            double UT,
+            Guid vesselId
+        )
         {
             // Is KaC Ready?
             if (!AssemblyLoaded && !KACWrapper.APIReady)
@@ -76,12 +80,10 @@ namespace RemoteTech.AddOns
     }
 }
 
-
 // this is a 1:1 copy of KACWrapper from https://github.com/TriggerAu/KerbalAlarmClock/blob/master/KerbalAlarmClock/API/KACWrapper.cs
 // see http://triggerau.github.io/KerbalAlarmClock/api.html for help
 namespace RemoteTech_KACWrapper
 {
-
     ///////////////////////////////////////////////////////////////////////////////////////////
     // BELOW HERE SHOULD NOT BE EDITED - this links to the loaded KAC module without requiring a Hard Dependancy
     ///////////////////////////////////////////////////////////////////////////////////////////
@@ -98,25 +100,34 @@ namespace RemoteTech_KACWrapper
 
         /// <summary>
         /// This is the Kerbal Alarm Clock object
-        /// 
+        ///
         /// SET AFTER INIT
         /// </summary>
         public static KACAPI KAC = null;
+
         /// <summary>
-        /// Whether we found the KerbalAlarmClock assembly in the loadedassemblies. 
-        /// 
+        /// Whether we found the KerbalAlarmClock assembly in the loadedassemblies.
+        ///
         /// SET AFTER INIT
         /// </summary>
-        public static Boolean AssemblyExists { get { return (KACType != null); } }
+        public static Boolean AssemblyExists
+        {
+            get { return (KACType != null); }
+        }
+
         /// <summary>
-        /// Whether we managed to hook the running Instance from the assembly. 
-        /// 
+        /// Whether we managed to hook the running Instance from the assembly.
+        ///
         /// SET AFTER INIT
         /// </summary>
-        public static Boolean InstanceExists { get { return (KAC != null); } }
+        public static Boolean InstanceExists
+        {
+            get { return (KAC != null); }
+        }
+
         /// <summary>
-        /// Whether we managed to wrap all the methods/functions from the instance. 
-        /// 
+        /// Whether we managed to wrap all the methods/functions from the instance.
+        ///
         /// SET AFTER INIT
         /// </summary>
         private static Boolean _KACWrapped = false;
@@ -124,8 +135,10 @@ namespace RemoteTech_KACWrapper
         /// <summary>
         /// Whether the object has been wrapped and the APIReady flag is set in the real KAC
         /// </summary>
-        public static Boolean APIReady { get { return _KACWrapped && KAC.APIReady && !NeedUpgrade; } }
-
+        public static Boolean APIReady
+        {
+            get { return _KACWrapped && KAC.APIReady && !NeedUpgrade; }
+        }
 
         public static Boolean NeedUpgrade { get; private set; }
 
@@ -164,8 +177,8 @@ namespace RemoteTech_KACWrapper
             }
 
             //now the Alarm Type
-            KACAlarmType = AssemblyLoader.loadedAssemblies
-                .Select(a => a.assembly.GetExportedTypes())
+            KACAlarmType = AssemblyLoader
+                .loadedAssemblies.Select(a => a.assembly.GetExportedTypes())
                 .SelectMany(t => t)
                 .FirstOrDefault(t => t.FullName == "KerbalAlarmClock.KACAlarm");
 
@@ -179,7 +192,9 @@ namespace RemoteTech_KACWrapper
 
             try
             {
-                actualKAC = KACType.GetField("APIInstance", BindingFlags.Public | BindingFlags.Static).GetValue(null);
+                actualKAC = KACType
+                    .GetField("APIInstance", BindingFlags.Public | BindingFlags.Static)
+                    .GetValue(null);
             }
             catch (Exception)
             {
@@ -206,7 +221,6 @@ namespace RemoteTech_KACWrapper
         /// </summary>
         public class KACAPI
         {
-
             internal KACAPI(Object KAC)
             {
                 //store the actual object
@@ -215,7 +229,10 @@ namespace RemoteTech_KACWrapper
                 //these sections get and store the reflection info and actual objects where required. Later in the properties we then read the values from the actual objects
                 //for events we also add a handler
                 LogFormatted("Getting APIReady Object");
-                APIReadyField = KACType.GetField("APIReady", BindingFlags.Public | BindingFlags.Static);
+                APIReadyField = KACType.GetField(
+                    "APIReady",
+                    BindingFlags.Public | BindingFlags.Static
+                );
                 LogFormatted("Success: " + (APIReadyField != null).ToString());
 
                 //WORK OUT THE STUFF WE NEED TO HOOK FOR PEOPEL HERE
@@ -226,23 +243,37 @@ namespace RemoteTech_KACWrapper
 
                 //Events
                 LogFormatted("Getting Alarm State Change Event");
-                onAlarmStateChangedEvent = KACType.GetEvent("onAlarmStateChanged", BindingFlags.Public | BindingFlags.Instance);
+                onAlarmStateChangedEvent = KACType.GetEvent(
+                    "onAlarmStateChanged",
+                    BindingFlags.Public | BindingFlags.Instance
+                );
                 LogFormatted_DebugOnly("Success: " + (onAlarmStateChangedEvent != null).ToString());
                 LogFormatted_DebugOnly("Adding Handler");
                 AddHandler(onAlarmStateChangedEvent, actualKAC, AlarmStateChanged);
 
                 //Methods
                 LogFormatted("Getting Create Method");
-                CreateAlarmMethod = KACType.GetMethod("CreateAlarm", BindingFlags.Public | BindingFlags.Instance);
+                CreateAlarmMethod = KACType.GetMethod(
+                    "CreateAlarm",
+                    BindingFlags.Public | BindingFlags.Instance
+                );
                 LogFormatted_DebugOnly("Success: " + (CreateAlarmMethod != null).ToString());
 
                 LogFormatted("Getting Delete Method");
-                DeleteAlarmMethod = KACType.GetMethod("DeleteAlarm", BindingFlags.Public | BindingFlags.Instance);
+                DeleteAlarmMethod = KACType.GetMethod(
+                    "DeleteAlarm",
+                    BindingFlags.Public | BindingFlags.Instance
+                );
                 LogFormatted_DebugOnly("Success: " + (DeleteAlarmMethod != null).ToString());
 
                 LogFormatted("Getting DrawAlarmAction");
-                DrawAlarmActionChoiceMethod = KACType.GetMethod("DrawAlarmActionChoiceAPI", BindingFlags.Public | BindingFlags.Instance);
-                LogFormatted_DebugOnly("Success: " + (DrawAlarmActionChoiceMethod != null).ToString());
+                DrawAlarmActionChoiceMethod = KACType.GetMethod(
+                    "DrawAlarmActionChoiceAPI",
+                    BindingFlags.Public | BindingFlags.Instance
+                );
+                LogFormatted_DebugOnly(
+                    "Success: " + (DrawAlarmActionChoiceMethod != null).ToString()
+                );
 
                 //LogFormatted("Getting DrawTimeEntry");
                 //DrawTimeEntryMethod = KACType.GetMethod("DrawTimeEntryAPI", BindingFlags.Public | BindingFlags.Instance);
@@ -259,6 +290,7 @@ namespace RemoteTech_KACWrapper
             private Object actualKAC;
 
             private FieldInfo APIReadyField;
+
             /// <summary>
             /// Whether the APIReady flag is set in the real KAC
             /// </summary>
@@ -282,10 +314,7 @@ namespace RemoteTech_KACWrapper
             /// </summary>
             internal KACAlarmList Alarms
             {
-                get
-                {
-                    return ExtractAlarmList(actualAlarms);
-                }
+                get { return ExtractAlarmList(actualAlarms); }
             }
 
             /// <summary>
@@ -327,7 +356,11 @@ namespace RemoteTech_KACWrapper
             protected void AddHandler(EventInfo Event, Object KACObject, Action<Object> Handler)
             {
                 //build a delegate
-                Delegate d = Delegate.CreateDelegate(Event.EventHandlerType, Handler.Target, Handler.Method);
+                Delegate d = Delegate.CreateDelegate(
+                    Event.EventHandlerType,
+                    Handler.Target,
+                    Handler.Method
+                );
                 //get the Events Add method
                 MethodInfo addHandler = Event.GetAddMethod();
                 //and add the delegate
@@ -341,11 +374,13 @@ namespace RemoteTech_KACWrapper
             /// Event that fires when the State of an Alarm changes
             /// </summary>
             public event AlarmStateChangedHandler onAlarmStateChanged;
+
             /// <summary>
             /// Structure of the event delegeate
             /// </summary>
             /// <param name="e"></param>
             public delegate void AlarmStateChangedHandler(AlarmStateChangedEventArgs e);
+
             /// <summary>
             /// This is the structure that holds the event arguments
             /// </summary>
@@ -355,20 +390,20 @@ namespace RemoteTech_KACWrapper
                 {
                     Type type = actualEvent.GetType();
                     this.alarm = new KACAlarm(type.GetField("alarm").GetValue(actualEvent));
-                    this.eventType = (KACAlarm.AlarmStateEventsEnum)type.GetField("eventType").GetValue(actualEvent);
-
+                    this.eventType = (KACAlarm.AlarmStateEventsEnum)
+                        type.GetField("eventType").GetValue(actualEvent);
                 }
 
                 /// <summary>
                 /// Alarm that has had the state change
                 /// </summary>
                 public KACAlarm alarm;
+
                 /// <summary>
                 /// What the state was before the event
                 /// </summary>
                 public KACAlarm.AlarmStateEventsEnum eventType;
             }
-
 
             /// <summary>
             /// private function that grabs the actual event and fires our wrapped one
@@ -396,11 +431,15 @@ namespace RemoteTech_KACWrapper
             /// <returns>ID of the newly created alarm</returns>
             internal String CreateAlarm(AlarmTypeEnum AlarmType, String Name, Double UT)
             {
-                return (String)CreateAlarmMethod.Invoke(actualKAC, new System.Object[] { (Int32)AlarmType, Name, UT });
+                return (String)
+                    CreateAlarmMethod.Invoke(
+                        actualKAC,
+                        new System.Object[] { (Int32)AlarmType, Name, UT }
+                    );
             }
 
-
             private MethodInfo DeleteAlarmMethod;
+
             /// <summary>
             /// Delete an Alarm
             /// </summary>
@@ -408,20 +447,30 @@ namespace RemoteTech_KACWrapper
             /// <returns>Success of the deletion</returns>
             internal Boolean DeleteAlarm(String AlarmID)
             {
-                return (Boolean)DeleteAlarmMethod.Invoke(actualKAC, new System.Object[] { AlarmID });
+                return (Boolean)
+                    DeleteAlarmMethod.Invoke(actualKAC, new System.Object[] { AlarmID });
             }
 
-
             private MethodInfo DrawAlarmActionChoiceMethod;
+
             /// <summary>
             /// Delete an Alarm
             /// </summary>
             /// <param name="AlarmID">Unique ID of the alarm</param>
             /// <returns>Success of the deletion</returns>
-            internal Boolean DrawAlarmActionChoice(ref AlarmActionEnum Choice, String LabelText, Int32 LabelWidth, Int32 ButtonWidth)
+            internal Boolean DrawAlarmActionChoice(
+                ref AlarmActionEnum Choice,
+                String LabelText,
+                Int32 LabelWidth,
+                Int32 ButtonWidth
+            )
             {
                 Int32 InValue = (Int32)Choice;
-                Int32 OutValue = (Int32)DrawAlarmActionChoiceMethod.Invoke(actualKAC, new System.Object[] { InValue, LabelText, LabelWidth, ButtonWidth });
+                Int32 OutValue = (Int32)
+                    DrawAlarmActionChoiceMethod.Invoke(
+                        actualKAC,
+                        new System.Object[] { InValue, LabelText, LabelWidth, ButtonWidth }
+                    );
 
                 Choice = (AlarmActionEnum)OutValue;
                 return (InValue != OutValue);
@@ -443,7 +492,6 @@ namespace RemoteTech_KACWrapper
             //    Time = OutValue;
             //    return (InValue != OutValue);
             //}
-
 
             #endregion
 
@@ -480,9 +528,11 @@ namespace RemoteTech_KACWrapper
                     //    LogFormatted("F:{0}-{1}", fi.Name, fi.DeclaringType);
                     //}
                 }
+
                 private Object actualAlarm;
 
                 private FieldInfo VesselIDField;
+
                 /// <summary>
                 /// Unique Identifier of the Vessel that the alarm is attached to
                 /// </summary>
@@ -493,6 +543,7 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo IDField;
+
                 /// <summary>
                 /// Unique Identifier of this alarm
                 /// </summary>
@@ -502,6 +553,7 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo NameField;
+
                 /// <summary>
                 /// Short Text Name for the Alarm
                 /// </summary>
@@ -512,6 +564,7 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo NotesField;
+
                 /// <summary>
                 /// Longer Text Description for the Alarm
                 /// </summary>
@@ -522,6 +575,7 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo XferOriginBodyNameField;
+
                 /// <summary>
                 /// Name of the origin body for a transfer
                 /// </summary>
@@ -532,6 +586,7 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo XferTargetBodyNameField;
+
                 /// <summary>
                 /// Name of the destination body for a transfer
                 /// </summary>
@@ -542,12 +597,17 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo AlarmTypeField;
+
                 /// <summary>
                 /// What type of Alarm is this - affects icon displayed and some calc options
                 /// </summary>
-                public AlarmTypeEnum AlarmType { get { return (AlarmTypeEnum)AlarmTypeField.GetValue(actualAlarm); } }
+                public AlarmTypeEnum AlarmType
+                {
+                    get { return (AlarmTypeEnum)AlarmTypeField.GetValue(actualAlarm); }
+                }
 
                 private PropertyInfo AlarmTimeProperty;
+
                 /// <summary>
                 /// In game UT value of the alarm
                 /// </summary>
@@ -558,6 +618,7 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo AlarmMarginField;
+
                 /// <summary>
                 /// In game seconds the alarm will fire before the event it is for
                 /// </summary>
@@ -568,6 +629,7 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo AlarmActionField;
+
                 /// <summary>
                 /// What should the Alarm Clock do when the alarm fires
                 /// </summary>
@@ -578,13 +640,17 @@ namespace RemoteTech_KACWrapper
                 }
 
                 private FieldInfo RemainingField;
+
                 /// <summary>
                 /// How much Game time is left before the alarm fires
                 /// </summary>
-                public Double Remaining { get { return (Double)RemainingField.GetValue(actualAlarm); } }
-
+                public Double Remaining
+                {
+                    get { return (Double)RemainingField.GetValue(actualAlarm); }
+                }
 
                 private FieldInfo RepeatAlarmField;
+
                 /// <summary>
                 /// Whether the alarm will be repeated after it fires
                 /// </summary>
@@ -594,6 +660,7 @@ namespace RemoteTech_KACWrapper
                     set { RepeatAlarmField.SetValue(actualAlarm, value); }
                 }
                 private PropertyInfo RepeatAlarmPeriodProperty;
+
                 /// <summary>
                 /// Value in Seconds after which the alarm will repeat
                 /// </summary>
@@ -601,8 +668,14 @@ namespace RemoteTech_KACWrapper
                 {
                     get
                     {
-                        try { return (Double)RepeatAlarmPeriodProperty.GetValue(actualAlarm, null); }
-                        catch (Exception) { return 0; }
+                        try
+                        {
+                            return (Double)RepeatAlarmPeriodProperty.GetValue(actualAlarm, null);
+                        }
+                        catch (Exception)
+                        {
+                            return 0;
+                        }
                     }
                     set { RepeatAlarmPeriodProperty.SetValue(actualAlarm, value, null); }
                 }
@@ -636,21 +709,26 @@ namespace RemoteTech_KACWrapper
                 EarthTime,
                 Contract,
                 ContractAuto,
-                ScienceLab
+                ScienceLab,
             }
 
             public enum AlarmActionEnum
             {
                 [Description("Do Nothing-Delete When Past")]
                 DoNothingDeleteWhenPassed,
+
                 [Description("Do Nothing")]
                 DoNothing,
+
                 [Description("Message Only-No Affect on warp")]
                 MessageOnly,
+
                 [Description("Kill Warp Only-No Message")]
                 KillWarpOnly,
+
                 [Description("Kill Warp and Message")]
                 KillWarp,
+
                 [Description("Pause Game and Message")]
                 PauseGame,
             }
@@ -661,14 +739,12 @@ namespace RemoteTech_KACWrapper
                 Minutes = 1,
                 Hours = 2,
                 Days = 3,
-                Years = 4
+                Years = 4,
             }
 
-            public class KACAlarmList : List<KACAlarm>
-            {
-
-            }
+            public class KACAlarmList : List<KACAlarm> { }
         }
+
         #region Logging Stuff
         /// <summary>
         /// Some Structured logging to the debug file - ONLY RUNS WHEN DLL COMPILED IN DEBUG MODE
@@ -689,9 +765,13 @@ namespace RemoteTech_KACWrapper
         internal static void LogFormatted(String Message, params Object[] strParams)
         {
             Message = String.Format(Message, strParams);
-            String strMessageLine = String.Format("{0},{2}-{3},{1}",
-                DateTime.Now, Message, System.Reflection.Assembly.GetExecutingAssembly().GetName().Name,
-                System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.Name);
+            String strMessageLine = String.Format(
+                "{0},{2}-{3},{1}",
+                DateTime.Now,
+                Message,
+                System.Reflection.Assembly.GetExecutingAssembly().GetName().Name,
+                System.Reflection.MethodBase.GetCurrentMethod().DeclaringType.Name
+            );
             UnityEngine.Debug.Log(strMessageLine);
         }
         #endregion

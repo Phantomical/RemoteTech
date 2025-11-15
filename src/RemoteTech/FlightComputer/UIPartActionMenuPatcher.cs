@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Globalization;
 using UnityEngine;
 
 namespace RemoteTech.FlightComputer
@@ -11,7 +11,12 @@ namespace RemoteTech.FlightComputer
     public static class UIPartActionMenuPatcher
     {
         // UI types that we are actually hooking
-        public static Type[] UIPartActionFieldItemAllowedTypes = { typeof(UIPartActionToggle), typeof(UIPartActionFloatRange), typeof(UIPartActionCycle) };
+        public static Type[] UIPartActionFieldItemAllowedTypes =
+        {
+            typeof(UIPartActionToggle),
+            typeof(UIPartActionFloatRange),
+            typeof(UIPartActionCycle),
+        };
 
         public static List<string> ParsedPartActions = new List<string>();
 
@@ -38,37 +43,53 @@ namespace RemoteTech.FlightComputer
                     continue;
 
                 // get event from button
-                BaseEvent originalEvent = uiPartActionEventItem.Evt;                   
+                BaseEvent originalEvent = uiPartActionEventItem.Evt;
 
                 // Search for the BaseEventDelegate (BaseEvent.onEvent) field defined for the current BaseEvent type.
                 // Note that 'onEvent' is protected, so we have to go through reflection.
-                FieldInfo partEventFieldInfo = typeof(BaseEvent).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-                                                .First(fi => fi.FieldType == typeof(BaseEventDelegate));
+                FieldInfo partEventFieldInfo = typeof(BaseEvent)
+                    .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                    .First(fi => fi.FieldType == typeof(BaseEventDelegate));
 
-                // Get the actual value of the 'onEvent' field 
-                BaseEventDelegate partEvent = (BaseEventDelegate)partEventFieldInfo.GetValue(originalEvent);
+                // Get the actual value of the 'onEvent' field
+                BaseEventDelegate partEvent = (BaseEventDelegate)
+                    partEventFieldInfo.GetValue(originalEvent);
 
                 // Gets the method represented by the delegate and from this method returns an array of custom attributes applied to this member.
                 // Simply put, we want all [KSPEvent] attributes applied to the BaseEventDelegate.Method field.
-                object[] customAttributes = partEvent.Method.GetCustomAttributes(typeof(KSPEvent), true);
+                object[] customAttributes = partEvent.Method.GetCustomAttributes(
+                    typeof(KSPEvent),
+                    true
+                );
 
                 // Look for the custom attribute skip_control
-                bool skipControl = customAttributes.Any(a => ((KSPEvent)a).category.Contains("skip_control"));
+                bool skipControl = customAttributes.Any(a =>
+                    ((KSPEvent)a).category.Contains("skip_control")
+                );
                 if (skipControl)
                     continue;
-                
+
                 /*
                  * Override the old BaseEvent with our BaseEvent to the button
                  */
 
                 // fix problems with other mods (behavior not seen with KSP) when the customAttributes list is empty.
-                KSPEvent kspEvent = !customAttributes.Any() ? WrappedEvent.KspEventFromBaseEvent(originalEvent) : (KSPEvent)customAttributes[0];
+                KSPEvent kspEvent = !customAttributes.Any()
+                    ? WrappedEvent.KspEventFromBaseEvent(originalEvent)
+                    : (KSPEvent)customAttributes[0];
 
                 // Look for the custom attribute skip_delay
-                bool ignoreDelay = customAttributes.Any(a => ((KSPEvent)a).category.Contains("skip_delay"));
+                bool ignoreDelay = customAttributes.Any(a =>
+                    ((KSPEvent)a).category.Contains("skip_delay")
+                );
 
                 // create the new BaseEvent
-                BaseEvent hookedEvent = EventWrapper.CreateWrapper(originalEvent, passthrough, ignoreDelay, kspEvent);
+                BaseEvent hookedEvent = EventWrapper.CreateWrapper(
+                    originalEvent,
+                    passthrough,
+                    ignoreDelay,
+                    kspEvent
+                );
 
                 // get the original event index in the event list
                 BaseEventList eventList = originalEvent.listParent;
@@ -79,7 +100,8 @@ namespace RemoteTech.FlightComputer
                 eventList.Add(hookedEvent);
 
                 // get the baseEvent field from UIPartActionEventItem (note: this is uiPartActionEventItem.Evt, but we can't set its value...)
-                FieldInfo baseEventField = typeof(UIPartActionEventItem).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                FieldInfo baseEventField = typeof(UIPartActionEventItem)
+                    .GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                     .First(fi => fi.FieldType == typeof(BaseEvent));
 
                 // replace the button baseEvent value with our hooked event
@@ -109,22 +131,24 @@ namespace RemoteTech.FlightComputer
                 if (uiPartActionFieldItem == null)
                     continue;
 
-                // now check that the UIPartActionFieldItem type (e.g UIPartActionToggle; UIPartActionCycle; UIPartActionFloatRange, etc.) 
+                // now check that the UIPartActionFieldItem type (e.g UIPartActionToggle; UIPartActionCycle; UIPartActionFloatRange, etc.)
                 // is actually something we can handle.
-                if (UIPartActionFieldItemAllowedTypes.All(type => uiPartActionFieldItem.GetType() != type))
+                if (
+                    UIPartActionFieldItemAllowedTypes.All(type =>
+                        uiPartActionFieldItem.GetType() != type
+                    )
+                )
                     continue;
 
                 var fieldWrapper = new FieldWrapper(uiPartActionFieldItem, passthrough, false);
             }
-            
         }
 
-        #region FieldWrapper        
+        #region FieldWrapper
         public class WrappedField : BaseField
         {
-            public WrappedField(BaseField baseField, KSPField field) : base(field, baseField.FieldInfo, baseField.host)
-            {   
-            }
+            public WrappedField(BaseField baseField, KSPField field)
+                : base(field, baseField.FieldInfo, baseField.host) { }
 
             /// <summary>Gets or sets the future field value.</summary>
             public object NewValue { get; set; }
@@ -139,15 +163,28 @@ namespace RemoteTech.FlightComputer
                 try
                 {
                     if (NewValueType != typeof(string))
-                        NewValue = Convert.ChangeType(NewValue, this.NewValueType, CultureInfo.InvariantCulture);
+                        NewValue = Convert.ChangeType(
+                            NewValue,
+                            this.NewValueType,
+                            CultureInfo.InvariantCulture
+                        );
                     else
                         NewValue = stringValue;
 
                     return true;
                 }
-                catch(Exception ex) when(ex is InvalidCastException || ex is FormatException || ex is OverflowException)
+                catch (Exception ex)
+                    when (ex is InvalidCastException
+                        || ex is FormatException
+                        || ex is OverflowException
+                    )
                 {
-                    RTLog.Notify("WrappedField.NewValueFromString() : can't convert {0} to new type: {1} ; for field name: {2}", stringValue, NewValueType, FieldInfo.Name);
+                    RTLog.Notify(
+                        "WrappedField.NewValueFromString() : can't convert {0} to new type: {1} ; for field name: {2}",
+                        stringValue,
+                        NewValueType,
+                        FieldInfo.Name
+                    );
                     return false;
                 }
             }
@@ -158,7 +195,7 @@ namespace RemoteTech.FlightComputer
             /// <remarks>This gets called by the flight computer either immediately if there's no delay or later if the command is queued.</remarks>
             public void Invoke()
             {
-                if(NewValue != null)
+                if (NewValue != null)
                     FieldInfo.SetValue(host, NewValue);
             }
 
@@ -173,7 +210,7 @@ namespace RemoteTech.FlightComputer
                     guiUnits = baseField.guiUnits,
                     guiFormat = baseField.guiFormat,
                     category = baseField.category,
-                    advancedTweakable = baseField.advancedTweakable
+                    advancedTweakable = baseField.advancedTweakable,
                 };
 
                 return kspField;
@@ -190,14 +227,21 @@ namespace RemoteTech.FlightComputer
             private Action<float> _delayInvoke;
             private object _lastNewValue;
 
-            public FieldWrapper(UIPartActionFieldItem uiPartAction, Action<BaseField, bool> passthrough, bool ignoreDelay)
+            public FieldWrapper(
+                UIPartActionFieldItem uiPartAction,
+                Action<BaseField, bool> passthrough,
+                bool ignoreDelay
+            )
             {
                 _uiPartAction = uiPartAction;
                 SetDefaultListener();
-               
+
                 _passthrough = passthrough;
                 _ignoreDelay = ignoreDelay;
-                _wrappedField = new WrappedField(uiPartAction.Field, WrappedField.KspFieldFromBaseField(uiPartAction.Field));
+                _wrappedField = new WrappedField(
+                    uiPartAction.Field,
+                    WrappedField.KspFieldFromBaseField(uiPartAction.Field)
+                );
             }
 
             public void Invoke()
@@ -249,11 +293,10 @@ namespace RemoteTech.FlightComputer
 
                     case nameof(UIPartActionFloatRange):
                         var partFloat = _uiPartAction as UIPartActionFloatRange;
-                        if(partFloat != null)
+                        if (partFloat != null)
                         {
                             partFloat.slider.onValueChanged.RemoveAllListeners();
                             partFloat.slider.onValueChanged.AddListener(GetNewValueFloat);
-
                         }
                         break;
                 }
@@ -302,9 +345,13 @@ namespace RemoteTech.FlightComputer
                                     // get current value
                                     int currentValue;
                                     if (partCycle.PartModule != null)
-                                        currentValue = partCycle.Field.GetValue<int>(partCycle.PartModule);
+                                        currentValue = partCycle.Field.GetValue<int>(
+                                            partCycle.PartModule
+                                        );
                                     else
-                                        currentValue = partCycle.Field.GetValue<int>(partCycle.Part);
+                                        currentValue = partCycle.Field.GetValue<int>(
+                                            partCycle.Part
+                                        );
 
                                     _lastNewValue = (currentValue + 1) % uiCycle.stateNames.Length;
                                     // invoke now
@@ -326,12 +373,20 @@ namespace RemoteTech.FlightComputer
                                     // get current value
                                     float currentValue;
                                     if (partFloat.PartModule != null)
-                                        currentValue = partFloat.Field.GetValue<float>(partFloat.PartModule);
+                                        currentValue = partFloat.Field.GetValue<float>(
+                                            partFloat.PartModule
+                                        );
                                     else
-                                        currentValue = partFloat.Field.GetValue<float>(partFloat.Part);
+                                        currentValue = partFloat.Field.GetValue<float>(
+                                            partFloat.Part
+                                        );
 
                                     // get new value
-                                    var newValue = HandleFloatRange(currentValue, uiFloatRange, partFloat.slider);
+                                    var newValue = HandleFloatRange(
+                                        currentValue,
+                                        uiFloatRange,
+                                        partFloat.slider
+                                    );
                                     if (!float.IsNaN(newValue))
                                     {
                                         _lastNewValue = newValue;
@@ -349,9 +404,17 @@ namespace RemoteTech.FlightComputer
                 }
             }
 
-            private static float HandleFloatRange(float fieldValue, UI_FloatRange uiFloatRange, UnityEngine.UI.Slider slider)
+            private static float HandleFloatRange(
+                float fieldValue,
+                UI_FloatRange uiFloatRange,
+                UnityEngine.UI.Slider slider
+            )
             {
-                var lerpedValue = Mathf.Lerp(uiFloatRange.minValue, uiFloatRange.maxValue, slider.value);
+                var lerpedValue = Mathf.Lerp(
+                    uiFloatRange.minValue,
+                    uiFloatRange.maxValue,
+                    slider.value
+                );
                 var moddedValue = lerpedValue % uiFloatRange.stepIncrement;
                 var num = fieldValue;
                 if (moddedValue != 0f)
@@ -369,9 +432,15 @@ namespace RemoteTech.FlightComputer
                 {
                     fieldValue = lerpedValue;
                 }
-                slider.value = Mathf.InverseLerp(uiFloatRange.minValue, uiFloatRange.maxValue, fieldValue);
+                slider.value = Mathf.InverseLerp(
+                    uiFloatRange.minValue,
+                    uiFloatRange.maxValue,
+                    fieldValue
+                );
                 fieldValue = (float)Math.Round(fieldValue, 5);
-                return Mathf.Abs(fieldValue - num) > uiFloatRange.stepIncrement * 0.98f ? fieldValue : float.NaN;
+                return Mathf.Abs(fieldValue - num) > uiFloatRange.stepIncrement * 0.98f
+                    ? fieldValue
+                    : float.NaN;
             }
         }
         #endregion
@@ -381,7 +450,13 @@ namespace RemoteTech.FlightComputer
         {
             private readonly BaseEvent _originalEvent;
 
-            public WrappedEvent(BaseEvent originalEvent, BaseEventList baseParentList, string name, BaseEventDelegate baseActionDelegate, KSPEvent kspEvent)
+            public WrappedEvent(
+                BaseEvent originalEvent,
+                BaseEventList baseParentList,
+                string name,
+                BaseEventDelegate baseActionDelegate,
+                KSPEvent kspEvent
+            )
                 : base(baseParentList, name, baseActionDelegate, kspEvent)
             {
                 _originalEvent = originalEvent;
@@ -414,7 +489,7 @@ namespace RemoteTech.FlightComputer
                     guiActiveUnfocused = baseEvent.guiActiveUnfocused,
                     unfocusedRange = baseEvent.unfocusedRange,
                     externalToEVAOnly = baseEvent.externalToEVAOnly,
-                    isPersistent = baseEvent.isPersistent
+                    isPersistent = baseEvent.isPersistent,
                 };
 
                 return kspEvent;
@@ -427,14 +502,23 @@ namespace RemoteTech.FlightComputer
             private readonly BaseEvent _event;
             private readonly bool _ignoreDelay;
 
-            private EventWrapper(BaseEvent original, Action<BaseEvent, bool> passthrough, bool ignoreDelay)
+            private EventWrapper(
+                BaseEvent original,
+                Action<BaseEvent, bool> passthrough,
+                bool ignoreDelay
+            )
             {
                 _passthrough = passthrough;
                 _event = original;
                 _ignoreDelay = ignoreDelay;
             }
 
-            public static BaseEvent CreateWrapper(BaseEvent original, Action<BaseEvent, bool> passthrough, bool ignoreDelay, KSPEvent kspEvent)
+            public static BaseEvent CreateWrapper(
+                BaseEvent original,
+                Action<BaseEvent, bool> passthrough,
+                bool ignoreDelay,
+                KSPEvent kspEvent
+            )
             {
                 // Create a new configuration node and fill this node with the original base event with the values
                 ConfigNode cn = new ConfigNode();
@@ -449,7 +533,13 @@ namespace RemoteTech.FlightComputer
                 // Create a new event, its main features are:
                 // 1. It retains its original base event invokable method: invokable directly through its InvokeOriginalEvent() method [useful for other mods, e.g. kOS]
                 // 2. Its new invoke() method which is in this wrapper class and decorated with and new KSPEvent category, namely "skip_control" (meaning we have already seen this event).
-                BaseEvent newEvent = new WrappedEvent(original, original.listParent, original.name, wrapper.Invoke, kspEvent);
+                BaseEvent newEvent = new WrappedEvent(
+                    original,
+                    original.listParent,
+                    original.name,
+                    wrapper.Invoke,
+                    kspEvent
+                );
 
                 // load the original base event values into the new base event
                 newEvent.OnLoad(cn);

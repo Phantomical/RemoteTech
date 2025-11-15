@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-using UnityEngine;
 using RemoteTech.FlightComputer.Commands;
+using UnityEngine;
 
 namespace RemoteTech.FlightComputer
 {
@@ -9,7 +9,13 @@ namespace RemoteTech.FlightComputer
     {
         public static bool UseSas = true;
 
-        public static void HoldAttitude(FlightCtrlState fs, FlightComputer f, ReferenceFrame frame, FlightAttitude attitude, Quaternion extra)
+        public static void HoldAttitude(
+            FlightCtrlState fs,
+            FlightComputer f,
+            ReferenceFrame frame,
+            FlightAttitude attitude,
+            Quaternion extra
+        )
         {
             var v = f.Vessel;
             var forward = Vector3.zero;
@@ -32,13 +38,18 @@ namespace RemoteTech.FlightComputer
 
                 case ReferenceFrame.North:
                     up = (v.mainBody.position - v.CoM);
-                    forward = Vector3.ProjectOnPlane(v.mainBody.position + v.mainBody.transform.up * (float)v.mainBody.Radius - v.CoM, up);
+                    forward = Vector3.ProjectOnPlane(
+                        v.mainBody.position
+                            + v.mainBody.transform.up * (float)v.mainBody.Radius
+                            - v.CoM,
+                        up
+                    );
                     break;
 
                 case ReferenceFrame.Maneuver:
                     ignoreRoll = true;
 
-                    if (f.Vessel.patchedConicSolver == null)//scenario: two vessels within physical range with FC attitude hold cmds. Unloaded one doesn't have solver instance
+                    if (f.Vessel.patchedConicSolver == null) //scenario: two vessels within physical range with FC attitude hold cmds. Unloaded one doesn't have solver instance
                     {
                         f.Vessel.AttachPatchedConicsSolver();
                         f.Vessel.patchedConicSolver.Update();
@@ -46,7 +57,9 @@ namespace RemoteTech.FlightComputer
 
                     if (f.Vessel.patchedConicSolver.maneuverNodes.Count != 0)
                     {
-                        forward = f.Vessel.patchedConicSolver.maneuverNodes[0].GetBurnVector(v.orbit);
+                        forward = f
+                            .Vessel.patchedConicSolver.maneuverNodes[0]
+                            .GetBurnVector(v.orbit);
                         up = (v.mainBody.position - v.CoM);
                     }
                     else
@@ -87,7 +100,7 @@ namespace RemoteTech.FlightComputer
             }
             Vector3.OrthoNormalize(ref forward, ref up);
             Quaternion rotationReference = Quaternion.LookRotation(forward, up);
-            
+
             switch (attitude)
             {
                 case FlightAttitude.Prograde:
@@ -123,7 +136,14 @@ namespace RemoteTech.FlightComputer
         /// <summary>
         /// Single entry point of all Flight Computer orientation holding, including maneuver node.
         /// </summary>
-        public static void HoldOrientation(FlightCtrlState fs, FlightComputer f, Quaternion target, bool ignoreRoll = false, bool ignorePitch = false, bool ignoreHeading = false)
+        public static void HoldOrientation(
+            FlightCtrlState fs,
+            FlightComputer f,
+            Quaternion target,
+            bool ignoreRoll = false,
+            bool ignorePitch = false,
+            bool ignoreHeading = false
+        )
         {
             f.Vessel.ActionGroups.SetGroup(KSPActionGroup.SAS, false);
             SteeringHelper.SteerShipToward(target, fs, f, ignoreRoll, ignorePitch, ignoreHeading);
@@ -136,7 +156,8 @@ namespace RemoteTech.FlightComputer
         /// <returns>True if there are enough propellant to perform</returns>
         public static bool hasPropellant(System.Collections.Generic.List<Propellant> propellants)
         {
-            if (CheatOptions.InfinitePropellant) return true;
+            if (CheatOptions.InfinitePropellant)
+                return true;
 
             foreach (var props in propellants)
             {
@@ -164,9 +185,11 @@ namespace RemoteTech.FlightComputer
             foreach (var pm in v.parts.SelectMany(p => p.FindModulesImplementing<ModuleEngines>()))
             {
                 // Notice: flameout is only true if you try to perform with this engine not before
-                if (!pm.EngineIgnited || pm.flameout) continue;
+                if (!pm.EngineIgnited || pm.flameout)
+                    continue;
                 // check for the needed propellant before changing the total thrust
-                if (!FlightCore.hasPropellant(pm.propellants)) continue;
+                if (!FlightCore.hasPropellant(pm.propellants))
+                    continue;
                 thrust += (double)pm.maxThrust * (pm.thrustPercentage / 100);
             }
 
@@ -220,7 +243,14 @@ namespace RemoteTech.FlightComputer
         /// <param name="c">The FlightCtrlState for the current vessel.</param>
         /// <param name="fc">The flight computer carrying out the slew</param>
         /// <param name="ignoreRoll">[optional] to ignore the roll</param>
-        public static void SteerShipToward(Quaternion target, FlightCtrlState c, FlightComputer fc, bool ignoreRoll, bool ignorePitch, bool ignoreHeading)
+        public static void SteerShipToward(
+            Quaternion target,
+            FlightCtrlState c,
+            FlightComputer fc,
+            bool ignoreRoll,
+            bool ignorePitch,
+            bool ignoreHeading
+        )
         {
             var actuation = fc.PIDController.GetActuation(target);
 
@@ -230,9 +260,30 @@ namespace RemoteTech.FlightComputer
             actuation.z = Math.Abs(actuation.z) >= outputDeadband ? actuation.z : 0.0;
 
             // update the flight controls
-            c.pitch = (ignorePitch || (FlightOutputControlMask & FlightControlOutput.IgnorePitch) == FlightControlOutput.IgnorePitch) ? 0.0f : Mathf.Clamp((float) actuation.x, -driveLimit, driveLimit);
-            c.roll = (ignoreRoll || (FlightOutputControlMask & FlightControlOutput.IgnoreRoll) == FlightControlOutput.IgnoreRoll) ? 0.0f : Mathf.Clamp((float) actuation.y, -driveLimit, driveLimit);
-            c.yaw = (ignoreHeading || (FlightOutputControlMask & FlightControlOutput.IgnoreHeading) == FlightControlOutput.IgnoreHeading) ? 0.0f : Mathf.Clamp((float) actuation.z, -driveLimit, driveLimit);
+            c.pitch =
+                (
+                    ignorePitch
+                    || (FlightOutputControlMask & FlightControlOutput.IgnorePitch)
+                        == FlightControlOutput.IgnorePitch
+                )
+                    ? 0.0f
+                    : Mathf.Clamp((float)actuation.x, -driveLimit, driveLimit);
+            c.roll =
+                (
+                    ignoreRoll
+                    || (FlightOutputControlMask & FlightControlOutput.IgnoreRoll)
+                        == FlightControlOutput.IgnoreRoll
+                )
+                    ? 0.0f
+                    : Mathf.Clamp((float)actuation.y, -driveLimit, driveLimit);
+            c.yaw =
+                (
+                    ignoreHeading
+                    || (FlightOutputControlMask & FlightControlOutput.IgnoreHeading)
+                        == FlightControlOutput.IgnoreHeading
+                )
+                    ? 0.0f
+                    : Mathf.Clamp((float)actuation.z, -driveLimit, driveLimit);
         }
 
         /// <summary>
@@ -286,7 +337,11 @@ namespace RemoteTech.FlightComputer
                         torqueControlSurface.Add(ctrlTorquePos);
                         torqueControlSurface.Add(-ctrlTorqueNeg);
 
-                        torqueReactionSpeed6.Add(Mathf.Abs(cs.ctrlSurfaceRange) / cs.actuatorSpeed * Vector3d.Max(ctrlTorquePos.Abs(), ctrlTorqueNeg.Abs()));
+                        torqueReactionSpeed6.Add(
+                            Mathf.Abs(cs.ctrlSurfaceRange)
+                                / cs.actuatorSpeed
+                                * Vector3d.Max(ctrlTorquePos.Abs(), ctrlTorqueNeg.Abs())
+                        );
                     }
                     else if (pm is ModuleGimbal)
                     {
@@ -302,7 +357,10 @@ namespace RemoteTech.FlightComputer
                         torqueGimbal.Add(-neg);
 
                         if (g.useGimbalResponseSpeed)
-                            torqueReactionSpeed6.Add((Mathf.Abs(g.gimbalRange) / g.gimbalResponseSpeed) * Vector3d.Max(pos.Abs(), neg.Abs()));
+                            torqueReactionSpeed6.Add(
+                                (Mathf.Abs(g.gimbalRange) / g.gimbalResponseSpeed)
+                                    * Vector3d.Max(pos.Abs(), neg.Abs())
+                            );
                     }
                     else if (pm is ModuleRCS)
                     {
@@ -322,15 +380,27 @@ namespace RemoteTech.FlightComputer
                 }
             }
 
-            torqueAvailable += Vector3d.Max(torqueReactionWheel.positive, torqueReactionWheel.negative);
-            torqueAvailable += Vector3d.Max(rcsTorqueAvailable.positive, rcsTorqueAvailable.negative);
-            torqueAvailable += Vector3d.Max(torqueControlSurface.positive, torqueControlSurface.negative);
+            torqueAvailable += Vector3d.Max(
+                torqueReactionWheel.positive,
+                torqueReactionWheel.negative
+            );
+            torqueAvailable += Vector3d.Max(
+                rcsTorqueAvailable.positive,
+                rcsTorqueAvailable.negative
+            );
+            torqueAvailable += Vector3d.Max(
+                torqueControlSurface.positive,
+                torqueControlSurface.negative
+            );
             torqueAvailable += Vector3d.Max(torqueGimbal.positive, torqueGimbal.negative);
             torqueAvailable += Vector3d.Max(torqueOthers.positive, torqueOthers.negative);
 
             if (torqueAvailable.sqrMagnitude > 0)
             {
-                torqueReactionSpeed = Vector3d.Max(torqueReactionSpeed6.positive, torqueReactionSpeed6.negative);
+                torqueReactionSpeed = Vector3d.Max(
+                    torqueReactionSpeed6.positive,
+                    torqueReactionSpeed6.negative
+                );
                 torqueReactionSpeed.Scale(torqueAvailable.InvertNoNaN());
             }
             else
@@ -344,8 +414,13 @@ namespace RemoteTech.FlightComputer
         /// </summary>
         public static Vector3d InvertNoNaN(this Vector3d vector)
         {
-            return new Vector3d(vector.x != 0 ? 1 / vector.x : 0, vector.y != 0 ? 1 / vector.y : 0, vector.z != 0 ? 1 / vector.z : 0);
+            return new Vector3d(
+                vector.x != 0 ? 1 / vector.x : 0,
+                vector.y != 0 ? 1 / vector.y : 0,
+                vector.z != 0 ? 1 / vector.z : 0
+            );
         }
+
         public static Vector3 Abs(this Vector3 vector)
         {
             return new Vector3(Math.Abs(vector.x), Math.Abs(vector.y), Math.Abs(vector.z));
@@ -377,10 +452,23 @@ namespace RemoteTech.FlightComputer
                     if (rcs == null)
                         continue;
 
-                    if (!p.ShieldedFromAirstream && rcs.rcsEnabled && rcs.isEnabled && !rcs.isJustForShow)
+                    if (
+                        !p.ShieldedFromAirstream
+                        && rcs.rcsEnabled
+                        && rcs.isEnabled
+                        && !rcs.isJustForShow
+                    )
                     {
-                        Vector3 attitudeControl = new Vector3(rcs.enablePitch ? 1 : 0, rcs.enableRoll ? 1 : 0, rcs.enableYaw ? 1 : 0);
-                        Vector3 translationControl = new Vector3(rcs.enableX ? 1 : 0f, rcs.enableZ ? 1 : 0, rcs.enableY ? 1 : 0);
+                        Vector3 attitudeControl = new Vector3(
+                            rcs.enablePitch ? 1 : 0,
+                            rcs.enableRoll ? 1 : 0,
+                            rcs.enableYaw ? 1 : 0
+                        );
+                        Vector3 translationControl = new Vector3(
+                            rcs.enableX ? 1 : 0f,
+                            rcs.enableZ ? 1 : 0,
+                            rcs.enableY ? 1 : 0
+                        );
 
                         for (int j = 0; j < rcs.thrusterTransforms.Count; j++)
                         {
@@ -394,7 +482,11 @@ namespace RemoteTech.FlightComputer
                             {
                                 if (rcs.useLever)
                                 {
-                                    float lever = rcs.GetLeverDistance(t, thrustDirection, movingCoM);
+                                    float lever = rcs.GetLeverDistance(
+                                        t,
+                                        thrustDirection,
+                                        movingCoM
+                                    );
                                     if (lever > 1)
                                     {
                                         power = power / lever;
@@ -408,11 +500,24 @@ namespace RemoteTech.FlightComputer
 
                             Vector3d thrusterThrust = thrustDirection * power;
 
-                            rcsThrustAvailable.Add(Vector3.Scale(vessel.GetTransform().InverseTransformDirection(thrusterThrust), translationControl));
-                            Vector3d thrusterTorque = Vector3.Cross(thrusterPosition, thrusterThrust);
+                            rcsThrustAvailable.Add(
+                                Vector3.Scale(
+                                    vessel.GetTransform().InverseTransformDirection(thrusterThrust),
+                                    translationControl
+                                )
+                            );
+                            Vector3d thrusterTorque = Vector3.Cross(
+                                thrusterPosition,
+                                thrusterThrust
+                            );
 
                             // Convert in vessel local coordinate
-                            rcsTorqueAvailable.Add(Vector3.Scale(vessel.GetTransform().InverseTransformDirection(thrusterTorque), attitudeControl));
+                            rcsTorqueAvailable.Add(
+                                Vector3.Scale(
+                                    vessel.GetTransform().InverseTransformDirection(thrusterTorque),
+                                    attitudeControl
+                                )
+                            );
                         }
                     }
                 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-
 using RemoteTech.FlightComputer.Commands;
 
 namespace RemoteTech.FlightComputer
@@ -8,13 +7,21 @@ namespace RemoteTech.FlightComputer
     public class EventCommand : AbstractCommand
     {
         // Guiname of the BaseEvent
-        [Persistent] public string GUIName;
+        [Persistent]
+        public string GUIName;
+
         // Name of the BaseEvent
-        [Persistent] public string Name;
+        [Persistent]
+        public string Name;
+
         // flight id of the part by this BaseEvent
-        [Persistent] public uint flightID;
+        [Persistent]
+        public uint flightID;
+
         // PartModule of the part by this BaseEvent
-        [Persistent] public string Module;
+        [Persistent]
+        public string Module;
+
         // BaseEvent to invoke
         public BaseEvent BaseEvent = null;
 
@@ -22,18 +29,20 @@ namespace RemoteTech.FlightComputer
         {
             get
             {
-                return ((this.BaseEvent != null) ? this.BaseEvent.listParent.part.partInfo.title + ": " + this.GUIName : "none") +
-                        Environment.NewLine + base.Description;
+                return (
+                        (this.BaseEvent != null)
+                            ? this.BaseEvent.listParent.part.partInfo.title + ": " + this.GUIName
+                            : "none"
+                    )
+                    + Environment.NewLine
+                    + base.Description;
             }
         }
         public override string ShortName
         {
-            get
-            {
-                return (this.BaseEvent != null) ? this.BaseEvent.GUIName : "none";
-            }
+            get { return (this.BaseEvent != null) ? this.BaseEvent.GUIName : "none"; }
         }
-         
+
         public override bool Pop(FlightComputer f)
         {
             if (this.BaseEvent != null)
@@ -45,11 +54,15 @@ namespace RemoteTech.FlightComputer
                 }
                 catch (Exception invokeException)
                 {
-                    RTLog.Notify("BaseEvent invokeException by '{0}' with message: {1}",
-                                 RTLogLevel.LVL1, this.BaseEvent.guiName, invokeException.Message);
+                    RTLog.Notify(
+                        "BaseEvent invokeException by '{0}' with message: {1}",
+                        RTLogLevel.LVL1,
+                        this.BaseEvent.guiName,
+                        invokeException.Message
+                    );
                 }
             }
-            
+
             return false;
         }
 
@@ -69,7 +82,7 @@ namespace RemoteTech.FlightComputer
         /// <returns>true - loaded successfull</returns>
         public override bool Load(ConfigNode n, FlightComputer fc)
         {
-            if(base.Load(n, fc))
+            if (base.Load(n, fc))
             {
                 // deprecated since 1.6.2, we need this for upgrading from 1.6.x => 1.6.2
                 int PartId = 0;
@@ -85,8 +98,14 @@ namespace RemoteTech.FlightComputer
                 this.GUIName = n.GetValue("GUIName");
                 this.Name = n.GetValue("Name");
 
-                RTLog.Notify("Try to load an EventCommand from persistent with {0},{1},{2},{3},{4}",
-                             PartId, this.flightID, this.Module, this.GUIName, this.Name);
+                RTLog.Notify(
+                    "Try to load an EventCommand from persistent with {0},{1},{2},{3},{4}",
+                    PartId,
+                    this.flightID,
+                    this.Module,
+                    this.GUIName,
+                    this.Name
+                );
 
                 Part part = null;
                 var partlist = FlightGlobals.ActiveVessel.parts;
@@ -102,15 +121,20 @@ namespace RemoteTech.FlightComputer
                     part = partlist.Where(p => p.flightID == this.flightID).FirstOrDefault();
                 }
 
-                if (part == null) return false;
+                if (part == null)
+                    return false;
 
                 PartModule partmodule = part.Modules[Module];
-                if (partmodule == null) return false;
+                if (partmodule == null)
+                    return false;
 
                 BaseEventList eventlist = new BaseEventList(part, partmodule);
-                if (eventlist.Count <= 0) return false;
+                if (eventlist.Count <= 0)
+                    return false;
 
-                this.BaseEvent = eventlist.Where(ba => (ba.GUIName == this.GUIName || ba.name == this.Name)).FirstOrDefault();
+                this.BaseEvent = eventlist
+                    .Where(ba => (ba.GUIName == this.GUIName || ba.name == this.Name))
+                    .FirstOrDefault();
                 return true;
             }
             return false;

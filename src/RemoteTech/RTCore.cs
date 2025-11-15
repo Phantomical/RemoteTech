@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using RemoteTech.FlightComputer.Commands;
 using RemoteTech.UI;
-using UnityEngine;
 using Smooth.Algebraics;
+using UnityEngine;
 
 namespace RemoteTech
 {
     /// <summary>
-    /// Main base class of RemoteTech. It is called by various inheriting classes: 
+    /// Main base class of RemoteTech. It is called by various inheriting classes:
     ///  * RTCoreFlight (Flight scene)
     ///  * RTCoreTracking (Tracking station scene)
     ///  * RTMainMenu (Main menu scene)
@@ -32,7 +32,7 @@ namespace RemoteTech
         public AntennaManager Antennas { get; protected set; }
 
         /// <summary>
-        /// RemotTech network manager. 
+        /// RemotTech network manager.
         /// </summary>
         public NetworkManager Network { get; protected set; }
 
@@ -58,10 +58,12 @@ namespace RemoteTech
         /// Methods can register to this event to be called during the Update() method of the Unity engine (Game Logic engine phase).
         /// </summary>
         public event Action OnFrameUpdate = delegate { };
+
         /// <summary>
         /// Methods can register to this event to be called during the FixedUpdate() method of the Unity engine (Physics engine phase).
         /// </summary>
         public event Action OnPhysicsUpdate = delegate { };
+
         /// <summary>
         /// Methods can register to this event to be called during the OnGUI() method of the Unity engine (GUI Rendering engine phase).
         /// </summary>
@@ -75,14 +77,17 @@ namespace RemoteTech
         /// UI overlay for the Tracking station or Flight map view (draw and handle buttons in the bottom right corner).
         /// </summary>
         public FilterOverlay FilterOverlay { get; protected set; }
+
         /// <summary>
         /// UI overlay for the "focus view" in the Tracking station scene.
         /// </summary>
         public FocusOverlay FocusOverlay { get; protected set; }
+
         /// <summary>
         /// UI overlay to add a new button to maneuver nodes.
         /// </summary>
         public ManeuverNodeOverlay ManeuverNodeOverlay { get; protected set; }
+
         /// <summary>
         /// UI overlay used to display and handle the status quadrant (time delay) and the flight computer button.
         /// </summary>
@@ -90,7 +95,6 @@ namespace RemoteTech
 
         // New for handling the F2 GUI Hiding
         private bool _guiVisible = true;
-
 
         /// <summary>
         /// Called by Unity engine during initialization phase.
@@ -108,7 +112,9 @@ namespace RemoteTech
             Instance = this;
 
             // disable KSP CommNet
-            HighLogic.fetch.currentGame.Parameters.Difficulty.EnableCommNet = (RTSettings.Instance.CommNetEnabled = false);
+            HighLogic.fetch.currentGame.Parameters.Difficulty.EnableCommNet = (
+                RTSettings.Instance.CommNetEnabled = false
+            );
 
             // add-ons
             KacAddon = new AddOns.KerbalAlarmClockAddon();
@@ -135,7 +141,10 @@ namespace RemoteTech
             {
                 // do not try to register vessel types that have no chance of being RT controlled.
                 // includes: debris, SpaceObject, unknown, EVA and flag
-                if ((vessel.vesselType <= VesselType.Unknown) || (vessel.vesselType >= VesselType.EVA))
+                if (
+                    (vessel.vesselType <= VesselType.Unknown)
+                    || (vessel.vesselType >= VesselType.EVA)
+                )
                     continue;
 
                 Satellites.RegisterProto(vessel);
@@ -167,7 +176,8 @@ namespace RemoteTech
         {
             OnFrameUpdate.Invoke();
 
-            if (FlightGlobals.ActiveVessel == null || FlightGlobals.ActiveVessel.packed) return;
+            if (FlightGlobals.ActiveVessel == null || FlightGlobals.ActiveVessel.packed)
+                return;
             var vs = Satellites[FlightGlobals.ActiveVessel];
             if (vs != null)
             {
@@ -184,7 +194,12 @@ namespace RemoteTech
                     {
                         if (axisGroups.ElementAt(i).Item2 != 0) //skip both - and + keys pressed at same time
                         {
-                            vs.FlightComputer.Enqueue(AxisGroupCommand.WithGroup(axisGroups.ElementAt(i).Item1, axisGroups.ElementAt(i).Item2));
+                            vs.FlightComputer.Enqueue(
+                                AxisGroupCommand.WithGroup(
+                                    axisGroups.ElementAt(i).Item1,
+                                    axisGroups.ElementAt(i).Item2
+                                )
+                            );
                         }
                     }
 #endif
@@ -192,7 +207,9 @@ namespace RemoteTech
                     var actionGroups = GetActivatedActionGroup();
                     for (int i = 0; i < actionGroups.Count(); i++)
                     {
-                        vs.FlightComputer.Enqueue(ActionGroupCommand.WithGroup(actionGroups.ElementAt(i)));
+                        vs.FlightComputer.Enqueue(
+                            ActionGroupCommand.WithGroup(actionGroups.ElementAt(i))
+                        );
                     }
                 }
             }
@@ -251,13 +268,20 @@ namespace RemoteTech
         /// </summary>
         public void OnDestroy()
         {
-            if (FocusOverlay != null) FocusOverlay.Dispose();
-            if (ManeuverNodeOverlay != null) ManeuverNodeOverlay.Dispose();
-            if (FilterOverlay != null) FilterOverlay.Dispose();
-            if (Renderer != null) Renderer.Detach();
-            if (Network != null) Network.Dispose();
-            if (Satellites != null) Satellites.Dispose();
-            if (Antennas != null) Antennas.Dispose();
+            if (FocusOverlay != null)
+                FocusOverlay.Dispose();
+            if (ManeuverNodeOverlay != null)
+                ManeuverNodeOverlay.Dispose();
+            if (FilterOverlay != null)
+                FilterOverlay.Dispose();
+            if (Renderer != null)
+                Renderer.Detach();
+            if (Network != null)
+                Network.Dispose();
+            if (Satellites != null)
+                Satellites.Dispose();
+            if (Antennas != null)
+                Antennas.Dispose();
 
             // Release all RT locks currently engaged
             ReleaseLocks();
@@ -267,7 +291,8 @@ namespace RemoteTech
             GameEvents.onHideUI.Remove(UiOff);
 
             // add-ons
-            if (KacAddon != null) KacAddon = null;
+            if (KacAddon != null)
+                KacAddon = null;
 
             Instance = null;
         }
@@ -293,66 +318,175 @@ namespace RemoteTech
             InputLockManager.SetControlLock(ControlTypes.RCS, "RTLockRCS");
             InputLockManager.SetControlLock(ControlTypes.GROUPS_ALL, "RTLockActions");
         }
-        
+
         // Monstrosity that should fix the kOS control locks without modifications on their end.
         private static IEnumerable<KSPActionGroup> GetActivatedActionGroup()
         {
             if (GameSettings.LAUNCH_STAGES.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.STAGING) == ControlTypes.STAGING && !l.Key.Equals("RTLockStaging"))) 
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.STAGING) == ControlTypes.STAGING
+                        && !l.Key.Equals("RTLockStaging")
+                    )
+                )
                     yield return KSPActionGroup.Stage;
             if (GameSettings.AbortActionGroup.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.GROUP_ABORT) == ControlTypes.GROUP_ABORT && !l.Key.Equals("RTLockActions"))) 
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.GROUP_ABORT)
+                            == ControlTypes.GROUP_ABORT
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Abort;
             if (GameSettings.RCS_TOGGLE.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.RCS) == ControlTypes.RCS && !l.Key.Equals("RTLockRCS"))) 
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.RCS) == ControlTypes.RCS
+                        && !l.Key.Equals("RTLockRCS")
+                    )
+                )
                     yield return KSPActionGroup.RCS;
             if (GameSettings.SAS_TOGGLE.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.SAS) == ControlTypes.SAS && !l.Key.Equals("RTLockSAS"))) 
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.SAS) == ControlTypes.SAS
+                        && !l.Key.Equals("RTLockSAS")
+                    )
+                )
                     yield return KSPActionGroup.SAS;
             if (GameSettings.SAS_HOLD.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.SAS) == ControlTypes.SAS && !l.Key.Equals("RTLockSAS"))) 
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.SAS) == ControlTypes.SAS
+                        && !l.Key.Equals("RTLockSAS")
+                    )
+                )
                     yield return KSPActionGroup.SAS;
             if (GameSettings.SAS_HOLD.GetKeyUp())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.SAS) == ControlTypes.SAS && !l.Key.Equals("RTLockSAS"))) 
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.SAS) == ControlTypes.SAS
+                        && !l.Key.Equals("RTLockSAS")
+                    )
+                )
                     yield return KSPActionGroup.SAS;
             if (GameSettings.BRAKES.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.GROUP_BRAKES) == ControlTypes.GROUP_BRAKES && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.GROUP_BRAKES)
+                            == ControlTypes.GROUP_BRAKES
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Brakes;
             if (GameSettings.LANDING_GEAR.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.GROUP_GEARS) == ControlTypes.GROUP_GEARS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.GROUP_GEARS)
+                            == ControlTypes.GROUP_GEARS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Gear;
             if (GameSettings.HEADLIGHT_TOGGLE.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.GROUP_LIGHTS) == ControlTypes.GROUP_LIGHTS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.GROUP_LIGHTS)
+                            == ControlTypes.GROUP_LIGHTS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Light;
             if (GameSettings.CustomActionGroup1.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom01;
             if (GameSettings.CustomActionGroup2.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom02;
             if (GameSettings.CustomActionGroup3.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom03;
             if (GameSettings.CustomActionGroup4.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom04;
             if (GameSettings.CustomActionGroup5.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom05;
             if (GameSettings.CustomActionGroup6.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom06;
             if (GameSettings.CustomActionGroup7.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom07;
             if (GameSettings.CustomActionGroup8.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom08;
             if (GameSettings.CustomActionGroup9.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom09;
             if (GameSettings.CustomActionGroup10.GetKeyDown())
-                if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
+                if (
+                    !InputLockManager.lockStack.Any(l =>
+                        ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                            == ControlTypes.CUSTOM_ACTION_GROUPS
+                        && !l.Key.Equals("RTLockActions")
+                    )
+                )
                     yield return KSPActionGroup.Custom10;
         }
 
@@ -367,8 +501,18 @@ namespace RemoteTech
                 var axisGroup = GameSettings.AXIS_CUSTOM[i];
                 if (axisGroup.plusKeyBinding.GetKey() || axisGroup.minusKeyBinding.GetKey())
                 {
-                    if (!InputLockManager.lockStack.Any(l => ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS) == ControlTypes.CUSTOM_ACTION_GROUPS && !l.Key.Equals("RTLockActions")))
-                        yield return new Smooth.Algebraics.Tuple<KSPAxisGroup, int>((KSPAxisGroup) (512 << i), (axisGroup.plusKeyBinding.GetKey() ? 1 : 0) + (axisGroup.minusKeyBinding.GetKey() ? -1 : 0));
+                    if (
+                        !InputLockManager.lockStack.Any(l =>
+                            ((ControlTypes)l.Value & ControlTypes.CUSTOM_ACTION_GROUPS)
+                                == ControlTypes.CUSTOM_ACTION_GROUPS
+                            && !l.Key.Equals("RTLockActions")
+                        )
+                    )
+                        yield return new Smooth.Algebraics.Tuple<KSPAxisGroup, int>(
+                            (KSPAxisGroup)(512 << i),
+                            (axisGroup.plusKeyBinding.GetKey() ? 1 : 0)
+                                + (axisGroup.minusKeyBinding.GetKey() ? -1 : 0)
+                        );
                 }
             }
         }
@@ -433,7 +577,7 @@ namespace RemoteTech
     /// Main class, instantiated during Space Center scene. Allows mods to access connection data via API from the Space Center scene
     /// </summary>
     [KSPAddon(KSPAddon.Startup.SpaceCentre, false)]
-    public class RTCoreSpaceCenter: RTCore
+    public class RTCoreSpaceCenter : RTCore
     {
         public new void Start()
         {
@@ -445,9 +589,7 @@ namespace RemoteTech
             }
             else
             {
-                if (Instance != null)
-                {
-                }
+                if (Instance != null) { }
                 base.OnDestroy();
             }
         }

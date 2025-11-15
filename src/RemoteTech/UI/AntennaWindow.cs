@@ -6,13 +6,27 @@ namespace RemoteTech.UI
     public class AntennaWindow : AbstractWindow
     {
         public static Guid Guid = new Guid("39fe8878-d894-4ded-befb-d6e070ddc2c4");
-        public IAntenna Antenna { get { return mSetAntenna; } set { mSetAntenna = value; if (mAntennaFragment != null) mAntennaFragment.Antenna = value; } }
+        public IAntenna Antenna
+        {
+            get { return mSetAntenna; }
+            set
+            {
+                mSetAntenna = value;
+                if (mAntennaFragment != null)
+                    mAntennaFragment.Antenna = value;
+            }
+        }
         public AntennaFragment mAntennaFragment;
         public TargetInfoWindow mTargetInfos;
         private IAntenna mSetAntenna;
 
         public AntennaWindow(IAntenna antenna)
-            : base(Guid, "Antenna Configuration", new Rect(100, 100, 300, 500), WindowAlign.Floating)
+            : base(
+                Guid,
+                "Antenna Configuration",
+                new Rect(100, 100, 300, 500),
+                WindowAlign.Floating
+            )
         {
             mSavePosition = true;
             mSetAntenna = antenna;
@@ -58,7 +72,7 @@ namespace RemoteTech.UI
             /// Add the showTargetInfo callback to the on mouse over/out event
             mAntennaFragment.onMouseOverListEntry += showTargetInfo;
             mAntennaFragment.onMouseOutListEntry += hideTargetInfo;
-            
+
             GameEvents.onVesselChange.Add(OnVesselChange);
             base.Show();
         }
@@ -77,7 +91,8 @@ namespace RemoteTech.UI
                 mAntennaFragment.onMouseOverListEntry -= showTargetInfo;
                 mAntennaFragment.onMouseOutListEntry -= hideTargetInfo;
 
-                mAntennaFragment.Dispose(); mAntennaFragment = null;
+                mAntennaFragment.Dispose();
+                mAntennaFragment = null;
             }
 
             GameEvents.onVesselChange.Remove(OnVesselChange);
@@ -86,7 +101,11 @@ namespace RemoteTech.UI
 
         public override void Window(int uid)
         {
-            if (mAntennaFragment.Antenna == null) { Hide(); return; }
+            if (mAntennaFragment.Antenna == null)
+            {
+                Hide();
+                return;
+            }
             GUI.skin = HighLogic.Skin;
 
             // check the mouse position on every draw call

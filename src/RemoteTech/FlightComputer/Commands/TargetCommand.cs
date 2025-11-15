@@ -6,22 +6,32 @@ namespace RemoteTech.FlightComputer.Commands
     public class TargetCommand : AbstractCommand
     {
         /// Defines which target we have. Can be CelestialBody or Vessel
-        [Persistent] public String TargetType;
-        /// Target identifier, CelestialBody=Body-id or Vessel=GUID. Depends on TargetType
-        [Persistent] public String TargetId;
+        [Persistent]
+        public String TargetType;
 
-        public override double ExtraDelay { get { return 0.0; } set { return; } }
+        /// Target identifier, CelestialBody=Body-id or Vessel=GUID. Depends on TargetType
+        [Persistent]
+        public String TargetId;
+
+        public override double ExtraDelay
+        {
+            get { return 0.0; }
+            set { return; }
+        }
         public ITargetable Target { get; set; }
-        public override int Priority { get { return 1; } }
+        public override int Priority
+        {
+            get { return 1; }
+        }
 
         public override String Description
         {
-            get
-            {
-                return ShortName + Environment.NewLine + base.Description;
-            }
+            get { return ShortName + Environment.NewLine + base.Description; }
         }
-        public override string ShortName { get { return "Target: " + (Target != null ? Target.GetName() : "None"); } }
+        public override string ShortName
+        {
+            get { return "Target: " + (Target != null ? Target.GetName() : "None"); }
+        }
 
         public override bool Pop(FlightComputer f)
         {
@@ -29,18 +39,14 @@ namespace RemoteTech.FlightComputer.Commands
             return true;
         }
 
-        public override bool Execute(FlightComputer f, FlightCtrlState fcs) {
-
+        public override bool Execute(FlightComputer f, FlightCtrlState fcs)
+        {
             return false;
         }
 
         public static TargetCommand WithTarget(ITargetable target)
         {
-            return new TargetCommand()
-            {
-                Target = target,
-                TimeStamp = RTUtil.GameTime,
-            };
+            return new TargetCommand() { Target = target, TimeStamp = RTUtil.GameTime };
         }
 
         /// <summary>
@@ -52,26 +58,26 @@ namespace RemoteTech.FlightComputer.Commands
         /// <returns>true - loaded successfull</returns>
         public override bool Load(ConfigNode n, FlightComputer fc)
         {
-            if(base.Load(n, fc))
+            if (base.Load(n, fc))
             {
                 switch (TargetType)
                 {
                     case "Vessel":
-                        {
-                            Guid Vesselid = new Guid(TargetId);
-                            Target = RTUtil.GetVesselById(Vesselid);
-                            break;
-                        }
+                    {
+                        Guid Vesselid = new Guid(TargetId);
+                        Target = RTUtil.GetVesselById(Vesselid);
+                        break;
+                    }
                     case "CelestialBody":
-                        {
-                            Target = FlightGlobals.Bodies.ElementAt(int.Parse(TargetId));
-                            break;
-                        }
+                    {
+                        Target = FlightGlobals.Bodies.ElementAt(int.Parse(TargetId));
+                        break;
+                    }
                     default:
-                        {
-                            Target = null;
-                            break;
-                        }
+                    {
+                        Target = null;
+                        break;
+                    }
                 }
                 return true;
             }
@@ -93,20 +99,23 @@ namespace RemoteTech.FlightComputer.Commands
                 switch (TargetType)
                 {
                     case "Vessel":
-                        {
-                            TargetId = ((Vessel)Target).id.ToString();
-                            break;
-                        }
+                    {
+                        TargetId = ((Vessel)Target).id.ToString();
+                        break;
+                    }
                     case "CelestialBody":
-                        {
-                            TargetId = FlightGlobals.Bodies.ToList().IndexOf(((CelestialBody)Target)).ToString();
-                            break;
-                        }
+                    {
+                        TargetId = FlightGlobals
+                            .Bodies.ToList()
+                            .IndexOf(((CelestialBody)Target))
+                            .ToString();
+                        break;
+                    }
                     default:
-                        {
-                            TargetId = null;
-                            break;
-                        }
+                    {
+                        TargetId = null;
+                        break;
+                    }
                 }
             }
 

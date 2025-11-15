@@ -11,17 +11,27 @@ namespace RemoteTech
         /// <returns>true if the vessel has a local control, false otherwise.</returns>
         public static bool HasLocalControl(this Vessel vessel)
         {
-            if (vessel == null) return false;
+            if (vessel == null)
+                return false;
 
             // vessel must be a control source and it must be crewed or not implementing a module processor
-            var hasLocalControl = vessel.parts.Any(p => (p.isControlSource > Vessel.ControlLevel.NONE) &&
-                (p.protoModuleCrew.Any() || !p.FindModulesImplementing<ISignalProcessor>().Any() ||
-                    p.FindModulesImplementing<Modules.ModuleSPU>().Any(s => s.AlwaysAllowLocalControl)));
+            var hasLocalControl = vessel.parts.Any(p =>
+                (p.isControlSource > Vessel.ControlLevel.NONE)
+                && (
+                    p.protoModuleCrew.Any()
+                    || !p.FindModulesImplementing<ISignalProcessor>().Any()
+                    || p.FindModulesImplementing<Modules.ModuleSPU>()
+                        .Any(s => s.AlwaysAllowLocalControl)
+                )
+            );
             if (!hasLocalControl)
             {
-                // check if theres's a SPU which is a command station. 
+                // check if theres's a SPU which is a command station.
                 // Command stations must have local control even if there's nobody in the command pod [see other checks in ModuleSPU.IsCommandStation]
-                hasLocalControl = vessel.parts.Any(part => part.FindModulesImplementing<ISignalProcessor>().Any(signalProcessor => signalProcessor.IsCommandStation));
+                hasLocalControl = vessel.parts.Any(part =>
+                    part.FindModulesImplementing<ISignalProcessor>()
+                        .Any(signalProcessor => signalProcessor.IsCommandStation)
+                );
             }
 
             return hasLocalControl;

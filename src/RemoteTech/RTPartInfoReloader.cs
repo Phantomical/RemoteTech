@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using KSP.Localization;
+using UnityEngine;
 
 namespace RemoteTech
 {
@@ -22,17 +22,20 @@ namespace RemoteTech
             var loadedParts = PartLoader.LoadedPartsList;
 
             // find all RT parts
-            var rtPartList = loadedParts.Where(
-                part => part.partPrefab.Modules != null && 
-                (part.partPrefab.Modules.Contains<Modules.ModuleRTAntennaPassive>() ||
-                part.partPrefab.Modules.Contains<Modules.ModuleRTAntenna>() ||
-                part.partPrefab.Modules.Contains<Modules.ModuleSPU>() ||
-                part.partPrefab.Modules.Contains<Modules.ModuleSPUPassive>())
-                );
+            var rtPartList = loadedParts.Where(part =>
+                part.partPrefab.Modules != null
+                && (
+                    part.partPrefab.Modules.Contains<Modules.ModuleRTAntennaPassive>()
+                    || part.partPrefab.Modules.Contains<Modules.ModuleRTAntenna>()
+                    || part.partPrefab.Modules.Contains<Modules.ModuleSPU>()
+                    || part.partPrefab.Modules.Contains<Modules.ModuleSPUPassive>()
+                )
+            );
 
             foreach (var rtPart in rtPartList)
             {
-                var partHasTechPerk = rtPart.partPrefab.Modules.Contains<Modules.ModuleRTAntennaPassive>();
+                var partHasTechPerk =
+                    rtPart.partPrefab.Modules.Contains<Modules.ModuleRTAntennaPassive>();
                 var techPerkRefreshed = false;
 
                 for (var i = rtPart.moduleInfos.Count - 1; i >= 0; --i)
@@ -40,21 +43,29 @@ namespace RemoteTech
                     var info = rtPart.moduleInfos[i];
 
                     var moduleName = info.moduleName;
-                    if (moduleName == Localizer.Format("#RT_Editor_TechnologyPerk") || moduleName == Localizer.Format("#RT_Editor_Antenna") || moduleName == Localizer.Format("#RT_Editor_SignalProcessor") )//"Technology Perk""Antenna""Signal Processor"
+                    if (
+                        moduleName == Localizer.Format("#RT_Editor_TechnologyPerk")
+                        || moduleName == Localizer.Format("#RT_Editor_Antenna")
+                        || moduleName == Localizer.Format("#RT_Editor_SignalProcessor")
+                    ) //"Technology Perk""Antenna""Signal Processor"
                     {
                         var moduleClassName = string.Empty;
-                        if (moduleName == Localizer.Format("#RT_Editor_TechnologyPerk"))  moduleClassName = "ModuleRTAntennaPassive";//"Technology Perk"
-                        if (moduleName == Localizer.Format("#RT_Editor_Antenna"))          moduleClassName = "ModuleRTAntenna";//"Antenna"
-                        if (moduleName == Localizer.Format("#RT_Editor_SignalProcessor")) moduleClassName = "ModuleSPU";//"Signal Processor"
+                        if (moduleName == Localizer.Format("#RT_Editor_TechnologyPerk"))
+                            moduleClassName = "ModuleRTAntennaPassive"; //"Technology Perk"
+                        if (moduleName == Localizer.Format("#RT_Editor_Antenna"))
+                            moduleClassName = "ModuleRTAntenna"; //"Antenna"
+                        if (moduleName == Localizer.Format("#RT_Editor_SignalProcessor"))
+                            moduleClassName = "ModuleSPU"; //"Signal Processor"
 
                         // no moduleClassName found, skip to the next part
-                        if (moduleClassName == string.Empty) continue;
+                        if (moduleClassName == string.Empty)
+                            continue;
 
                         // otherwise refresh the infos
                         var newInfos = RefreshPartInfo(rtPart.partPrefab, moduleClassName);
                         if (newInfos != string.Empty)
                         {
-                            if (moduleName == Localizer.Format("#RT_Editor_TechnologyPerk"))//"Technology Perk"
+                            if (moduleName == Localizer.Format("#RT_Editor_TechnologyPerk")) //"Technology Perk"
                             {
                                 techPerkRefreshed = true;
                             }
@@ -69,7 +80,13 @@ namespace RemoteTech
                 }
 
                 // add a new info block for TechPerk
-                if (techPerkRefreshed == false && partHasTechPerk && rtPart.partPrefab.Modules.GetModule<Modules.ModuleRTAntennaPassive>().Unlocked)
+                if (
+                    techPerkRefreshed == false
+                    && partHasTechPerk
+                    && rtPart
+                        .partPrefab.Modules.GetModule<Modules.ModuleRTAntennaPassive>()
+                        .Unlocked
+                )
                 {
                     rtPart.moduleInfos.Add(CreateTechPerkInfoforPart(rtPart.partPrefab));
                 }
@@ -79,7 +96,7 @@ namespace RemoteTech
         /// <summary>
         /// This method creates a new Info-block for the <paramref name="part"/> and
         /// the <paramref name="moduleClassName"/> and returns a string. If no info
-        /// is available the result is an empty string. 
+        /// is available the result is an empty string.
         /// </summary>
         /// <param name="part">Part to get the infos</param>
         /// <param name="moduleClassName">module class name for the <see cref="PartModule.GetInfo"/> call</param>
@@ -87,7 +104,7 @@ namespace RemoteTech
         private static string RefreshPartInfo(Part part, string moduleClassName)
         {
             var newInfo = string.Empty;
-                
+
             foreach (var pm in part.Modules)
             {
                 if (pm.moduleName == moduleClassName)
@@ -114,7 +131,7 @@ namespace RemoteTech
             var newPerkInfo = new AvailablePart.ModuleInfo
             {
                 info = perkInfos,
-                moduleName = Localizer.Format("#RT_Editor_TechnologyPerk")//"Technology Perk"
+                moduleName = Localizer.Format("#RT_Editor_TechnologyPerk"), //"Technology Perk"
             };
 
             return newPerkInfo;

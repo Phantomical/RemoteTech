@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using KSP.Localization;
 using RemoteTech.FlightComputer;
 using UnityEngine;
-using KSP.Localization;
 #if !KSP131
 using Expansions.Serenity.DeployedScience.Runtime;
 #endif
@@ -16,7 +16,7 @@ namespace RemoteTech.Modules
     /// <para>Signal Processors are any part that can receive commands over a working connection (this include all stock probe cores).</para>
     /// <para>Thus, controlling a vessel is made only through the ModuleSPU unit. Players are only able to control a signal processor 5SPU) as long as they have a working connection (which by default is subject to signal delay).</para>
     /// </summary>
-    [KSPModule("#RT_Editor_SignalProcessor")]//Signal Processor
+    [KSPModule("#RT_Editor_SignalProcessor")] //Signal Processor
     public class ModuleSPU : PartModule, ISignalProcessor
     {
         public string Name => $"ModuleSPU({VesselName})";
@@ -24,58 +24,90 @@ namespace RemoteTech.Modules
         public string VesselName
         {
             get { return vessel != null ? vessel.vesselName : "vessel-null"; }
-            set { if(vessel != null) vessel.vesselName = value; }
+            set
+            {
+                if (vessel != null)
+                    vessel.vesselName = value;
+            }
         }
         public bool VesselLoaded => vessel != null && vessel.loaded;
         public Guid VesselId { get; private set; }
 
-        public Vector3 Position { get { return vessel != null ? vessel.GetWorldPos3D() : new Vector3d(); } }
-        public CelestialBody Body { get { return vessel != null ? vessel.mainBody : null; } }
+        public Vector3 Position
+        {
+            get { return vessel != null ? vessel.GetWorldPos3D() : new Vector3d(); }
+        }
+        public CelestialBody Body
+        {
+            get { return vessel != null ? vessel.mainBody : null; }
+        }
         public bool Visible => MapViewFiltering.CheckAgainstFilter(vessel);
         public bool Powered => vessel != null && IsRTPowered;
 
-        public bool IsCommandStation => IsRTPowered && IsRTCommandStation && vessel != null && vessel.GetVesselCrew().Count >= RTCommandMinCrew;
+        public bool IsCommandStation =>
+            IsRTPowered
+            && IsRTCommandStation
+            && vessel != null
+            && vessel.GetVesselCrew().Count >= RTCommandMinCrew;
         public FlightComputer.FlightComputer FlightComputer { get; private set; }
         public Vessel Vessel => vessel;
-        public bool IsMaster => Satellite != null && ReferenceEquals(Satellite.SignalProcessor, this);
+        public bool IsMaster =>
+            Satellite != null && ReferenceEquals(Satellite.SignalProcessor, this);
         public bool CanRelaySignal => AllowSignalRelay;
 
         /* KSP fields */
-        [KSPField(isPersistant = true)] public bool IsRTPowered;
-        [KSPField(isPersistant = true)] public bool IsRTSignalProcessor = true;
-        [KSPField(isPersistant = true)] public bool IsRTCommandStation = false;
-        [KSPField(isPersistant = true)] public int RTCommandMinCrew = 6;
-        [KSPField(isPersistant = true)] public bool AlwaysAllowLocalControl = false;
-        [KSPField(isPersistant = true)] public bool AllowSignalRelay = true;
+        [KSPField(isPersistant = true)]
+        public bool IsRTPowered;
 
-        [KSPField] public bool ShowGUI_Status = true;
-        [KSPField] public bool ShowEditor_Type = true;
+        [KSPField(isPersistant = true)]
+        public bool IsRTSignalProcessor = true;
 
-        [KSPField(guiName = "#RT_ModuleUI_SPU", guiActive = true)] public string GUI_Status;//SPU
+        [KSPField(isPersistant = true)]
+        public bool IsRTCommandStation = false;
+
+        [KSPField(isPersistant = true)]
+        public int RTCommandMinCrew = 6;
+
+        [KSPField(isPersistant = true)]
+        public bool AlwaysAllowLocalControl = false;
+
+        [KSPField(isPersistant = true)]
+        public bool AllowSignalRelay = true;
+
+        [KSPField]
+        public bool ShowGUI_Status = true;
+
+        [KSPField]
+        public bool ShowEditor_Type = true;
+
+        [KSPField(guiName = "#RT_ModuleUI_SPU", guiActive = true)]
+        public string GUI_Status; //SPU
 
         private enum State
         {
             Operational,
             ParentDefect,
-            NoConnection
+            NoConnection,
         }
 
         private VesselSatellite Satellite => RTCore.Instance.Satellites[VesselId];
 
-        /// <summary>Contains the names of any events that should always be run, 
+        /// <summary>Contains the names of any events that should always be run,
         /// regardless of connection status or signal delay
         /// </summary>
         private static readonly HashSet<string> EventWhiteList = new HashSet<string>
         {
-            "RenameVessel", "RenameAsteroidEvent", //  allow renaming vessels and Asteroids.
+            "RenameVessel",
+            "RenameAsteroidEvent", //  allow renaming vessels and Asteroids.
             "SpawnTransferDialog", // allow Kerbals to transfer even if no connection
-            "AimCamera", "ResetCamera" // advanced tweakables: camera events
+            "AimCamera",
+            "ResetCamera", // advanced tweakables: camera events
         };
 
-        /// <summary>Contains the names of any fields that should always be run, 
+        /// <summary>Contains the names of any fields that should always be run,
         /// regardless of connection status or signal delay.
         /// </summary>
-        private static readonly HashSet<string> FieldWhiteList = new HashSet<string>{};
+        private static readonly HashSet<string> FieldWhiteList = new HashSet<string> { };
 
         /*
          * Private methods
@@ -157,8 +189,8 @@ namespace RemoteTech.Modules
                 GameEvents.onPartUndock.Add(OnPartUndock);
                 GameEvents.onPartActionUICreate.Add(OnPartActionUiCreate);
                 GameEvents.onPartActionUIDismiss.Add(OnPartActionUiDismiss);
-                VesselId = vessel.id; 
-                if(RTCore.Instance != null)
+                VesselId = vessel.id;
+                if (RTCore.Instance != null)
                 {
                     RTCore.Instance.Satellites.Register(vessel, this);
                     if (FlightComputer == null)
@@ -181,11 +213,11 @@ namespace RemoteTech.Modules
             switch (UpdateControlState())
             {
                 case State.Operational:
-                    GUI_Status = Localizer.Format("#RT_ModuleUI_SPU_Status");//"Operational."
+                    GUI_Status = Localizer.Format("#RT_ModuleUI_SPU_Status"); //"Operational."
                     break;
                 case State.ParentDefect:
                 case State.NoConnection:
-                    GUI_Status = Localizer.Format("#RT_ModuleUI_SPU_Status2");//"No connection."
+                    GUI_Status = Localizer.Format("#RT_ModuleUI_SPU_Status2"); //"No connection."
                     break;
             }
         }
@@ -201,8 +233,11 @@ namespace RemoteTech.Modules
                 return string.Empty;
 
             return IsRTCommandStation
-                ? Localizer.Format("#RT_Editor_SignalProcessor_info1", "<color=#00FFFF>" + RTCommandMinCrew+ "</color>")//$"Remote Command capable ({}+ crew)"
-                : Localizer.Format("#RT_Editor_SignalProcessor_info2");//"Remote Control capable"
+                ? Localizer.Format(
+                    "#RT_Editor_SignalProcessor_info1",
+                    "<color=#00FFFF>" + RTCommandMinCrew + "</color>"
+                ) //$"Remote Command capable ({}+ crew)"
+                : Localizer.Format("#RT_Editor_SignalProcessor_info2"); //"Remote Control capable"
         }
 
         public override void OnSave(ConfigNode node)
@@ -216,7 +251,6 @@ namespace RemoteTech.Modules
                         FlightComputer = new FlightComputer.FlightComputer(this);
                     FlightComputer.Save(node);
                 }
-
             }
             catch (Exception e)
             {
@@ -241,7 +275,8 @@ namespace RemoteTech.Modules
             {
                 RTLog.Notify("An exception occurred in ModuleSPU.OnLoad(): ", RTLogLevel.LVL4, e);
                 print(e);
-            };
+            }
+            ;
         }
 
         /*
@@ -353,19 +388,27 @@ namespace RemoteTech.Modules
                     vs.SignalProcessor.FlightComputer.Enqueue(EventCommand.Event(baseEvent));
                 }
             }
-            else if (baseEvent.listParent.part.Modules.OfType<IAntenna>().Any() &&
-                     !baseEvent.listParent.part.Modules.OfType<ModuleRTAntennaPassive>().Any() &&
-                     RTSettings.Instance.ControlAntennaWithoutConnection)
+            else if (
+                baseEvent.listParent.part.Modules.OfType<IAntenna>().Any()
+                && !baseEvent.listParent.part.Modules.OfType<ModuleRTAntennaPassive>().Any()
+                && RTSettings.Instance.ControlAntennaWithoutConnection
+            )
             {
                 baseEvent.Invoke();
             }
             else
             {
-                ScreenMessages.PostScreenMessage(new ScreenMessage(Localizer.Format("#RT_ModuleUI_SPU_Msg"), 4.0f, ScreenMessageStyle.UPPER_LEFT));//"No connection to send command on."
+                ScreenMessages.PostScreenMessage(
+                    new ScreenMessage(
+                        Localizer.Format("#RT_ModuleUI_SPU_Msg"),
+                        4.0f,
+                        ScreenMessageStyle.UPPER_LEFT
+                    )
+                ); //"No connection to send command on."
             }
         }
 
-        private static void InvokePartAction(BaseField baseField,  bool ignoreDelay)
+        private static void InvokePartAction(BaseField baseField, bool ignoreDelay)
         {
             var field = (baseField as UIPartActionMenuPatcher.WrappedField);
             if (field == null)
@@ -388,7 +431,6 @@ namespace RemoteTech.Modules
             {
                 field.Invoke();
             }
-
             else if (FieldWhiteList.Contains(baseField.name))
             {
                 field.Invoke();
@@ -402,18 +444,29 @@ namespace RemoteTech.Modules
                 else
                 {
                     // queue command into FC
-                    vs.SignalProcessor.FlightComputer.Enqueue(PartActionCommand.Field(baseField, field.NewValue));
+                    vs.SignalProcessor.FlightComputer.Enqueue(
+                        PartActionCommand.Field(baseField, field.NewValue)
+                    );
                 }
-            }            
-            else if (field.host is PartModule && ((PartModule)field.host).part.Modules.OfType<IAntenna>().Any() &&
-                     !((PartModule)field.host).part.Modules.OfType<ModuleRTAntennaPassive>().Any() &&
-                     RTSettings.Instance.ControlAntennaWithoutConnection)
+            }
+            else if (
+                field.host is PartModule
+                && ((PartModule)field.host).part.Modules.OfType<IAntenna>().Any()
+                && !((PartModule)field.host).part.Modules.OfType<ModuleRTAntennaPassive>().Any()
+                && RTSettings.Instance.ControlAntennaWithoutConnection
+            )
             {
                 field.Invoke();
             }
             else
             {
-                ScreenMessages.PostScreenMessage(new ScreenMessage(Localizer.Format("#RT_ModuleUI_SPU_Msg"), 4.0f, ScreenMessageStyle.UPPER_LEFT));//"No connection to send command on."
+                ScreenMessages.PostScreenMessage(
+                    new ScreenMessage(
+                        Localizer.Format("#RT_ModuleUI_SPU_Msg"),
+                        4.0f,
+                        ScreenMessageStyle.UPPER_LEFT
+                    )
+                ); //"No connection to send command on."
             }
         }
     }

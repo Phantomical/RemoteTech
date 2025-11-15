@@ -7,18 +7,23 @@ namespace RemoteTech.UI
     {
         /// <summary>Initial Window width of the targetInfowWindow</summary>
         private const float WINDOW_WIDTH = 180;
+
         /// <summary>Initial Window width of the targetInfowWindow</summary>
         private const float WINDOW_HEIGHT = 10;
         public static Guid Guid = new Guid("c6ba7467-7ecd-dcc4-5861-46bcc25d5f45");
 
         /// <summary>The rearranged position based on the parent window or a fixed rect</summary>
         private Rect parentPos;
+
         /// <summary>Holds the parent window to always get the current position of it</summary>
         public AbstractWindow ParentWindow { get; set; }
+
         /// <summary>The alignment of this window</summary>
         private WindowAlign PopupAlignment { get; set; }
+
         /// <summary>Trigger to get the position from the parent window or not</summary>
         private bool FixPosition { get; set; }
+
         ////////////////////////////
         TargetInfoFragment tif;
 
@@ -37,16 +42,20 @@ namespace RemoteTech.UI
         /// Empty Constructor
         /// </summary>
         private TargetInfoWindow()
-            : base(Guid, null, new Rect(100, 100, WINDOW_WIDTH, WINDOW_HEIGHT), WindowAlign.Floating)
-        {
-        }
+            : base(
+                Guid,
+                null,
+                new Rect(100, 100, WINDOW_WIDTH, WINDOW_HEIGHT),
+                WindowAlign.Floating
+            ) { }
 
         /// <summary>
         /// Initialize the TargetWindow with a parent AbstractWindow
         /// </summary>
         /// <param name="parentWindow">Parent window for rearrange the position</param>
         /// <param name="alignment">Alignment of the targetWindow</param>
-        public TargetInfoWindow(AbstractWindow parentWindow, WindowAlign alignment): this()
+        public TargetInfoWindow(AbstractWindow parentWindow, WindowAlign alignment)
+            : this()
         {
             ParentWindow = parentWindow;
             Initial(alignment);
@@ -59,7 +68,8 @@ namespace RemoteTech.UI
         /// </summary>
         /// <param name="position">Position of the targetWindow</param>
         /// <param name="alignment">Alignment of the targetWindow</param>
-        public TargetInfoWindow(Rect position, WindowAlign alignment): this()
+        public TargetInfoWindow(Rect position, WindowAlign alignment)
+            : this()
         {
             parentPos = position;
             Initial(alignment);
@@ -72,7 +82,7 @@ namespace RemoteTech.UI
         /// </summary>
         /// <param name="target">Target from the antenna fragment</param>
         /// <param name="antenna">current antenna</param>
-        public void SetTarget(AntennaFragment.Entry target,IAntenna antenna)
+        public void SetTarget(AntennaFragment.Entry target, IAntenna antenna)
         {
             tif.SetTarget(target, antenna);
         }
@@ -91,7 +101,8 @@ namespace RemoteTech.UI
         /// </summary>
         public override void Hide()
         {
-            if (tif != null) tif.Dispose();
+            if (tif != null)
+                tif.Dispose();
 
             base.Hide();
         }
@@ -110,7 +121,7 @@ namespace RemoteTech.UI
                 tif.Draw();
             }
             GUILayout.EndVertical();
-            
+
             GUI.contentColor = pushColor;
             base.Window(uid);
         }
@@ -153,20 +164,20 @@ namespace RemoteTech.UI
             switch (aligmentSwitcher)
             {
                 case WindowAlign.TopRight:
-                    {
-                        SetXPosition(parentPos.x + parentPos.width);
-                        SetYPosition(parentPos.y);
-                        break;
-                    }
+                {
+                    SetXPosition(parentPos.x + parentPos.width);
+                    SetYPosition(parentPos.y);
+                    break;
+                }
                 case WindowAlign.TopLeft:
-                    {
-                        SetXPosition(parentPos.x - mInitialWidth);
-                        SetYPosition(parentPos.y);
-                        break;
-                    }
+                {
+                    SetXPosition(parentPos.x - mInitialWidth);
+                    SetYPosition(parentPos.y);
+                    break;
+                }
             }
         }
-        
+
         /// <summary>
         /// Set the y position
         /// </summary>

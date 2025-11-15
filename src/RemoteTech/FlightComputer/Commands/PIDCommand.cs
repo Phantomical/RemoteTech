@@ -4,27 +4,37 @@ namespace RemoteTech.FlightComputer.Commands
 {
     public class PIDCommand : AbstractCommand
     {
-        [Persistent] public double kp;
-        [Persistent] public double ki;
-        [Persistent] public double kd;
+        [Persistent]
+        public double kp;
+
+        [Persistent]
+        public double ki;
+
+        [Persistent]
+        public double kd;
 
         public override string ShortName
         {
-            get
-            {
-                return "Flight PID Controller parameters";
-            }
+            get { return "Flight PID Controller parameters"; }
         }
 
         public override string Description
         {
             get
             {
-                return ShortName +":" + Environment.NewLine +
-                    "Term P of " + kp + Environment.NewLine +
-                    "Term I of " + ki + Environment.NewLine +
-                    "Term D of " + kd + Environment.NewLine +
-                    base.Description;
+                return ShortName
+                    + ":"
+                    + Environment.NewLine
+                    + "Term P of "
+                    + kp
+                    + Environment.NewLine
+                    + "Term I of "
+                    + ki
+                    + Environment.NewLine
+                    + "Term D of "
+                    + kd
+                    + Environment.NewLine
+                    + base.Description;
             }
         }
 

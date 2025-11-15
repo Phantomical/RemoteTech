@@ -10,13 +10,19 @@ namespace RemoteTech.UI
         /// <summary>
         /// Action groups corresponding to the GUI buttons we want to hook / patch.
         /// </summary>
-        public static KSPActionGroup[] PatchedActionGroups = { KSPActionGroup.Gear, KSPActionGroup.Brakes, KSPActionGroup.Light, KSPActionGroup.Abort };
+        public static KSPActionGroup[] PatchedActionGroups =
+        {
+            KSPActionGroup.Gear,
+            KSPActionGroup.Brakes,
+            KSPActionGroup.Light,
+            KSPActionGroup.Abort,
+        };
 
         /// <summary>
         /// Hook flight action group buttons: gear, brakes, light and abort buttons.
         /// </summary>
         public static void Patch()
-        {   
+        {
             var buttons = CollectActionGroupToggleButtons(PatchedActionGroups);
             for (int i = 0; i < buttons.Count; ++i)
             {
@@ -25,7 +31,7 @@ namespace RemoteTech.UI
 
                 // set our hook
                 KSPActionGroup actionGroup = buttons[i].group;
-                buttons[i].toggle.onToggle.AddListener( () => ActivateActionGroup(actionGroup) );
+                buttons[i].toggle.onToggle.AddListener(() => ActivateActionGroup(actionGroup));
             }
         }
 
@@ -34,12 +40,17 @@ namespace RemoteTech.UI
         /// </summary>
         /// <param name="actionGroups">The action group(s) in which the buttons should be.</param>
         /// <returns>A list of action ActionGroupToggleButton buttons, filter by actionGroups paramter.</returns>
-        private static List<ActionGroupToggleButton> CollectActionGroupToggleButtons(KSPActionGroup[] actionGroups)
+        private static List<ActionGroupToggleButton> CollectActionGroupToggleButtons(
+            KSPActionGroup[] actionGroups
+        )
         {
             // get all action group buttons
-            ActionGroupToggleButton[] actionGroupToggleButtons = UnityEngine.Object.FindObjectsOfType<ActionGroupToggleButton>();
+            ActionGroupToggleButton[] actionGroupToggleButtons =
+                UnityEngine.Object.FindObjectsOfType<ActionGroupToggleButton>();
             // filter them to only get the buttons that have a group in the actionGroups array
-            var buttons = actionGroupToggleButtons.Where(button => actionGroups.Any(ag => button.group == ag)).ToList();
+            var buttons = actionGroupToggleButtons
+                .Where(button => actionGroups.Any(ag => button.group == ag))
+                .ToList();
 
             return buttons;
         }
@@ -63,7 +74,7 @@ namespace RemoteTech.UI
                 if (FlightGlobals.ActiveVessel.IsControllable)
                 {
                     // check if EVA or not (as we removed the default KSP listener).
-                    if(!FlightGlobals.ActiveVessel.isEVA)
+                    if (!FlightGlobals.ActiveVessel.isEVA)
                     {
                         FlightGlobals.ActiveVessel.ActionGroups.ToggleGroup(ag);
                     }
@@ -77,7 +88,7 @@ namespace RemoteTech.UI
                         {
                             FlightGlobals.ActiveVessel.evaController.ToggleLamp();
                         }
-                    }                   
+                    }
                 }
             }
         }

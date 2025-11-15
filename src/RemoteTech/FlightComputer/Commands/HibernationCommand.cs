@@ -1,8 +1,8 @@
-﻿using RemoteTech.Modules;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using KSP.Localization;
+using RemoteTech.Modules;
 
 namespace RemoteTech.FlightComputer.Commands
 {
@@ -17,9 +17,13 @@ namespace RemoteTech.FlightComputer.Commands
             AntennaSaver, //deactivate/re-activate antennas with power thresholds
         }
 
-        [Persistent] public PowerModes PowerMode;
-        [Persistent] private List<uint> AntennaIDs = new List<uint>();
-        private Dictionary<uint,DateTime> antennaLastChangedDates = new Dictionary<uint,DateTime>();
+        [Persistent]
+        public PowerModes PowerMode;
+
+        [Persistent]
+        private List<uint> AntennaIDs = new List<uint>();
+        private Dictionary<uint, DateTime> antennaLastChangedDates =
+            new Dictionary<uint, DateTime>();
         private bool mAbort = false;
         private bool mStartHibernation = false;
         private Vessel vesselReference;
@@ -28,27 +32,34 @@ namespace RemoteTech.FlightComputer.Commands
         {
             get
             {
-                switch(PowerMode)
+                switch (PowerMode)
                 {
                     case PowerModes.Hibernate:
-                        return Localizer.Format("#RT_PowerModecmd_Hibernate", (AntennaIDs.Count==0? Localizer.Format("#RT_PowerModecmd_Hibernate_deact") : Localizer.Format("#RT_PowerModecmd_Hibernate_inact", AntennaIDs.Count)));//"Power: Hibernation (" + +" antennas)""deactivating""inactive "+ 
+                        return Localizer.Format(
+                            "#RT_PowerModecmd_Hibernate",
+                            (
+                                AntennaIDs.Count == 0
+                                    ? Localizer.Format("#RT_PowerModecmd_Hibernate_deact")
+                                    : Localizer.Format(
+                                        "#RT_PowerModecmd_Hibernate_inact",
+                                        AntennaIDs.Count
+                                    )
+                            )
+                        ); //"Power: Hibernation (" + +" antennas)""deactivating""inactive "+
                     case PowerModes.AntennaSaver:
-                        return Localizer.Format("#RT_PowerModecmd_AntennaSaver");//"Power: Automatically de/re-activating antennas on thresholds"
+                        return Localizer.Format("#RT_PowerModecmd_AntennaSaver"); //"Power: Automatically de/re-activating antennas on thresholds"
                     case PowerModes.Normal:
                     case PowerModes.Wake:
-                        return Localizer.Format("#RT_PowerModecmd_Wake");//"Power: Terminating active power state"
+                        return Localizer.Format("#RT_PowerModecmd_Wake"); //"Power: Terminating active power state"
                     default:
-                        return Localizer.Format("#RT_PowerModecmd_Unknown");//"Power: Unknown"
+                        return Localizer.Format("#RT_PowerModecmd_Unknown"); //"Power: Unknown"
                 }
             }
         }
 
         public override string Description
         {
-            get
-            {
-                return ShortName + Environment.NewLine + base.Description;
-            }
+            get { return ShortName + Environment.NewLine + base.Description; }
         }
 
         public static HibernationCommand Hibernate()
@@ -83,26 +94,38 @@ namespace RemoteTech.FlightComputer.Commands
             this.vesselReference = fc.Vessel;
 
             var activeHibCommand = HibernationCommand.findActiveHibernationCmd(fc);
-            if(activeHibCommand != null) //what to do with active hibernation cmd under this new hib cmd?
+            if (activeHibCommand != null) //what to do with active hibernation cmd under this new hib cmd?
             {
-                if(this.PowerMode == PowerModes.Wake)
+                if (this.PowerMode == PowerModes.Wake)
                 {
                     activeHibCommand.Abort();
                     return false;
                 }
-                else if(this.PowerMode == PowerModes.Hibernate && activeHibCommand.PowerMode == PowerModes.AntennaSaver)
+                else if (
+                    this.PowerMode == PowerModes.Hibernate
+                    && activeHibCommand.PowerMode == PowerModes.AntennaSaver
+                )
                 {
                     activeHibCommand.Abort();
                 }
-                else if (this.PowerMode == PowerModes.Hibernate && activeHibCommand.PowerMode == PowerModes.Hibernate)
+                else if (
+                    this.PowerMode == PowerModes.Hibernate
+                    && activeHibCommand.PowerMode == PowerModes.Hibernate
+                )
                 {
                     return false;
                 }
-                else if (this.PowerMode == PowerModes.AntennaSaver&& activeHibCommand.PowerMode == PowerModes.Hibernate)
+                else if (
+                    this.PowerMode == PowerModes.AntennaSaver
+                    && activeHibCommand.PowerMode == PowerModes.Hibernate
+                )
                 {
                     activeHibCommand.Abort();
                 }
-                else if (this.PowerMode == PowerModes.AntennaSaver && activeHibCommand.PowerMode == PowerModes.AntennaSaver)
+                else if (
+                    this.PowerMode == PowerModes.AntennaSaver
+                    && activeHibCommand.PowerMode == PowerModes.AntennaSaver
+                )
                 {
                     return false;
                 }
@@ -110,7 +133,7 @@ namespace RemoteTech.FlightComputer.Commands
 
             if (PowerMode == PowerModes.Hibernate)
             {
-                if(AntennaIDs.Count == 0)//no saved list found
+                if (AntennaIDs.Count == 0) //no saved list found
                 {
                     mStartHibernation = true;
                 }
@@ -128,14 +151,22 @@ namespace RemoteTech.FlightComputer.Commands
         public override bool Execute(FlightComputer fc, FlightCtrlState ctrlState)
         {
             if (mAbort)
-            {               
+            {
                 mAbort = false;
                 return true;
             }
             else if (mStartHibernation)
             {
-                AntennaIDs = getActiveAntennas(RTCore.Instance.Satellites[fc.Vessel.id].Antennas.ToList());
-                EnterHibernation(fc.Vessel, safeGetAntennas(AntennaIDs, RTCore.Instance.Satellites[fc.Vessel.id].Antennas.ToList()));
+                AntennaIDs = getActiveAntennas(
+                    RTCore.Instance.Satellites[fc.Vessel.id].Antennas.ToList()
+                );
+                EnterHibernation(
+                    fc.Vessel,
+                    safeGetAntennas(
+                        AntennaIDs,
+                        RTCore.Instance.Satellites[fc.Vessel.id].Antennas.ToList()
+                    )
+                );
                 mStartHibernation = false;
                 return false;
             }
@@ -144,20 +175,28 @@ namespace RemoteTech.FlightComputer.Commands
                 RunThresholdControl(fc.Vessel, RTCore.Instance.Satellites[fc.Vessel.id].Antennas);
                 return false;
             }
-            else//active hiberation 
+            else //active hiberation
             {
                 //check if stock input lock is engaged on maneuver node when probe is in hibernation mode
-                if(fc.Vessel.HasLocalControl() && 
-                  ((InputLockManager.lockMask & (ulong)ControlTypes.MANNODE_ADDEDIT) != 0uL ||
-                   (InputLockManager.lockMask & (ulong)ControlTypes.MANNODE_DELETE) != 0uL))
+                if (
+                    fc.Vessel.HasLocalControl()
+                    && (
+                        (InputLockManager.lockMask & (ulong)ControlTypes.MANNODE_ADDEDIT) != 0uL
+                        || (InputLockManager.lockMask & (ulong)ControlTypes.MANNODE_DELETE) != 0uL
+                    )
+                )
                 {
-                    InputLockManager.lockStack["vessel_noControl_" + fc.Vessel.id] &= ~((ulong)ControlTypes.MANNODE_ADDEDIT);
-                    InputLockManager.lockStack["vessel_noControl_" + fc.Vessel.id] &= ~((ulong)ControlTypes.MANNODE_DELETE);
+                    InputLockManager.lockStack["vessel_noControl_" + fc.Vessel.id] &= ~(
+                        (ulong)ControlTypes.MANNODE_ADDEDIT
+                    );
+                    InputLockManager.lockStack["vessel_noControl_" + fc.Vessel.id] &= ~(
+                        (ulong)ControlTypes.MANNODE_DELETE
+                    );
                     InputLockManager.lockMask &= ~((ulong)ControlTypes.MANNODE_ADDEDIT);
                     InputLockManager.lockMask &= ~((ulong)ControlTypes.MANNODE_DELETE);
                 }
                 /*//unnecessary as it is locked back by stock ksp
-                else if(!fc.Vessel.HasLocalControl() && 
+                else if(!fc.Vessel.HasLocalControl() &&
                        ((InputLockManager.lockMask & (ulong)ControlTypes.MANNODE_ADDEDIT) == 0uL ||
                         (InputLockManager.lockMask & (ulong)ControlTypes.MANNODE_DELETE) == 0uL))
                 {
@@ -170,12 +209,17 @@ namespace RemoteTech.FlightComputer.Commands
 
                 //drop any queued non-power command up to next hiberation command (wake)
                 var cmdsToDrop = new List<ICommand>();
-                for(int i=0; i<fc.QueuedCommands.Count(); i++)
+                for (int i = 0; i < fc.QueuedCommands.Count(); i++)
                 {
-                    if (!(fc.QueuedCommands.ElementAt(i) is HibernationCommand || fc.QueuedCommands.ElementAt(i) is ManeuverCommand))//don't mess with player's maneuver nodes
+                    if (
+                        !(
+                            fc.QueuedCommands.ElementAt(i) is HibernationCommand
+                            || fc.QueuedCommands.ElementAt(i) is ManeuverCommand
+                        )
+                    ) //don't mess with player's maneuver nodes
                         cmdsToDrop.Add(fc.QueuedCommands.ElementAt(i));
                     else
-                        break;//found next hiberation command
+                        break; //found next hiberation command
                 }
 
                 for (int i = 0; i < cmdsToDrop.Count; i++)
@@ -192,11 +236,16 @@ namespace RemoteTech.FlightComputer.Commands
             switch (this.PowerMode)
             {
                 case PowerModes.Hibernate:
-                    var activatedAntennas = safeGetAntennas(AntennaIDs, RTCore.Instance.Satellites[this.vesselReference.id].Antennas.ToList());
+                    var activatedAntennas = safeGetAntennas(
+                        AntennaIDs,
+                        RTCore.Instance.Satellites[this.vesselReference.id].Antennas.ToList()
+                    );
                     ExitHibernation(this.vesselReference, activatedAntennas);
                     break;
                 case PowerModes.AntennaSaver:
-                    var antennas = RTCore.Instance.Satellites[this.vesselReference.id].Antennas.ToList();
+                    var antennas = RTCore
+                        .Instance.Satellites[this.vesselReference.id]
+                        .Antennas.ToList();
                     TerminateThresholdControl(antennas);
                     break;
                 default:
@@ -212,17 +261,17 @@ namespace RemoteTech.FlightComputer.Commands
         {
             //set all parts with ModuleCommand to hibernate
             var parts = vessel.Parts;
-            for(int i=0; i< parts.Count; i++)
+            for (int i = 0; i < parts.Count; i++)
             {
                 var moduleCommand = parts[i].Modules.GetModule<ModuleCommand>();
-                if(moduleCommand != null)
+                if (moduleCommand != null)
                 {
                     moduleCommand.hibernation = true;
                 }
             }
 
             //retract activated antennas
-            for(int i=0; i<antennas.Count; i++)
+            for (int i = 0; i < antennas.Count; i++)
             {
                 antennas[i].Activated = false;
             }
@@ -256,7 +305,13 @@ namespace RemoteTech.FlightComputer.Commands
                 if (cmdItr.Current is HibernationCommand)
                 {
                     var hibCmd = cmdItr.Current as HibernationCommand;
-                    if ((hibCmd.PowerMode == PowerModes.Hibernate || hibCmd.PowerMode == PowerModes.Sleep || hibCmd.PowerMode == PowerModes.AntennaSaver))
+                    if (
+                        (
+                            hibCmd.PowerMode == PowerModes.Hibernate
+                            || hibCmd.PowerMode == PowerModes.Sleep
+                            || hibCmd.PowerMode == PowerModes.AntennaSaver
+                        )
+                    )
                     {
                         return hibCmd;
                     }
@@ -287,7 +342,7 @@ namespace RemoteTech.FlightComputer.Commands
         {
             List<IAntenna> desiredAntennas = new List<IAntenna>();
 
-            for(int i=0; i<antennas.Count;i++)
+            for (int i = 0; i < antennas.Count; i++)
             {
                 if (antennaIDs.Contains((antennas[i] as PartModule).part.flightID))
                 {
@@ -310,7 +365,11 @@ namespace RemoteTech.FlightComputer.Commands
             double maxECAmount = 1;
             double percentage;
 
-            vessel.GetConnectedResourceTotals(PartResourceLibrary.ElectricityHashcode, out currentECAmount, out maxECAmount);
+            vessel.GetConnectedResourceTotals(
+                PartResourceLibrary.ElectricityHashcode,
+                out currentECAmount,
+                out maxECAmount
+            );
             percentage = (currentECAmount / maxECAmount) * 100.00;
 
             //run on each antenna
@@ -319,13 +378,22 @@ namespace RemoteTech.FlightComputer.Commands
                 if (!(antennas.ElementAt(i) is ModuleRTAntennaPassive))
                 {
                     var thisAntenna = antennas.ElementAt(i) as ModuleRTAntenna;
-                    thisAntenna.GUI_DeReactivation_Status = string.Format("EC {0:0.0}%", percentage);
+                    thisAntenna.GUI_DeReactivation_Status = string.Format(
+                        "EC {0:0.0}%",
+                        percentage
+                    );
 
-                    if (thisAntenna.Activated && percentage <= thisAntenna.RTDeactivatePowerThreshold)
+                    if (
+                        thisAntenna.Activated
+                        && percentage <= thisAntenna.RTDeactivatePowerThreshold
+                    )
                     {
                         SetDelayedAntennaState(false, thisAntenna);
                     }
-                    else if(!thisAntenna.Activated && percentage >= thisAntenna.RTActivatePowerThreshold)
+                    else if (
+                        !thisAntenna.Activated
+                        && percentage >= thisAntenna.RTActivatePowerThreshold
+                    )
                     {
                         SetDelayedAntennaState(true, thisAntenna);
                     }
@@ -356,7 +424,9 @@ namespace RemoteTech.FlightComputer.Commands
                 antennaLastChangedDates.Add(antenna.part.flightID, nowDate);
                 antenna.Activated = active;
             }
-            else if(nowDate.Subtract(antennaLastChangedDates[antenna.part.flightID]).TotalSeconds > 5)
+            else if (
+                nowDate.Subtract(antennaLastChangedDates[antenna.part.flightID]).TotalSeconds > 5
+            )
             {
                 antennaLastChangedDates[antenna.part.flightID] = nowDate;
                 antenna.Activated = active;

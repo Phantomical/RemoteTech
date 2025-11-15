@@ -6,7 +6,6 @@ using UnityEngine;
 /// Easy way to test the effectiveness of PID Controller is to launch a tiny rocket with a mammoth engine at the
 /// bottom with FC's GRD+ command & infinite propellent cheat set. KSP's autopilot passes this test with flying colors.
 /// </summary>
-
 namespace RemoteTech.FlightComputer
 {
     //Based on https://github.com/lamont-granquist/MechJim/blob/577002bccd3558d53efcee873d4bb982540c9cdf/Source/Manager/SteeringManager.cs
@@ -20,9 +19,11 @@ namespace RemoteTech.FlightComputer
 
         /* error */
         private double phiTotal;
+
         /* error in pitch, roll, yaw */
         private Vector3d phiVector = Vector3d.zero;
         private Vector3d TargetOmega = Vector3d.zero;
+
         /* max angular rotation */
         private Vector3d MaxOmega = Vector3d.zero;
 
@@ -50,6 +51,7 @@ namespace RemoteTech.FlightComputer
         private Vector3d vesselStarboard;
         private Vector3d targetForward;
         private Vector3d targetTop;
+
         //private Vector3d targetStarboard;
 
         public Vector3d getDeviationErrors()
@@ -64,7 +66,14 @@ namespace RemoteTech.FlightComputer
             set { this.rollControlRange = Math.Max(EPSILON, Math.Min(Math.PI, value)); }
         }
 
-        public PIDController(double kp, double ki, double kd, double maxoutput = double.MaxValue, double minoutput = double.MinValue, bool extraUnwind = false)
+        public PIDController(
+            double kp,
+            double ki,
+            double kd,
+            double maxoutput = double.MaxValue,
+            double minoutput = double.MinValue,
+            bool extraUnwind = false
+        )
         {
             Vessel = null;
             Target = new Quaternion();
@@ -116,14 +125,21 @@ namespace RemoteTech.FlightComputer
                 var MoI = Vessel.MOI;
 
                 phiTotal = calculatePhiTotal();
-                phiVector = calculatePhiVector();//deviation errors from orientation target
+                phiVector = calculatePhiVector(); //deviation errors from orientation target
 
                 for (int i = 0; i < 3; i++)
                 {
                     //Edge case: Very low (torque/MoI) (like 0.0078!) rate so need to rise max acceleration artifically
-                    StoppingTime = (OmegaThreshold <= (Torque[i] / MoI[i])) ?
-                                    1.0f :
-                                    (float)RTUtil.Clamp((1.0 / (Torque[i] / MoI[i])) * (Math.Abs(phiVector[i]) - Phi1FStoppingTime), 1.0, MaxStoppingTime);
+                    StoppingTime =
+                        (OmegaThreshold <= (Torque[i] / MoI[i]))
+                            ? 1.0f
+                            : (float)
+                                RTUtil.Clamp(
+                                    (1.0 / (Torque[i] / MoI[i]))
+                                        * (Math.Abs(phiVector[i]) - Phi1FStoppingTime),
+                                    1.0,
+                                    MaxStoppingTime
+                                );
 
                     MaxOmega[i] = Mathf.Max((Torque[i] * StoppingTime) / MoI[i], 0.0001f);
                 }
@@ -138,7 +154,12 @@ namespace RemoteTech.FlightComputer
                     rollRatePI.ResetI();
                 }
 
-                TargetTorque[0] = pitchPI.Update(Omega[0], TargetOmega[0], Vessel.MOI[0], Torque[0]);
+                TargetTorque[0] = pitchPI.Update(
+                    Omega[0],
+                    TargetOmega[0],
+                    Vessel.MOI[0],
+                    Torque[0]
+                );
                 TargetTorque[1] = rollPI.Update(Omega[1], TargetOmega[1], Vessel.MOI[1], Torque[1]);
                 TargetTorque[2] = yawPI.Update(Omega[2], TargetOmega[2], Vessel.MOI[2], Torque[2]);
             }
@@ -155,7 +176,11 @@ namespace RemoteTech.FlightComputer
             for (int i = 0; i < 3; i++)
             {
                 Actuation[i] = TargetTorque[i] / Torque[i];
-                if (Math.Abs(Actuation[i]) < EPSILON || double.IsNaN(Actuation[i]) || double.IsInfinity(Actuation[i]))
+                if (
+                    Math.Abs(Actuation[i]) < EPSILON
+                    || double.IsNaN(Actuation[i])
+                    || double.IsInfinity(Actuation[i])
+                )
                 {
                     Actuation[i] = 0;
                 }
@@ -168,15 +193,21 @@ namespace RemoteTech.FlightComputer
         {
             Vector3d Phi = Vector3d.zero;
 
-            Phi[0] = Vector3d.Angle(vesselForward, Vector3d.Exclude(vesselStarboard, targetForward)) * Mathf.Deg2Rad;
+            Phi[0] =
+                Vector3d.Angle(vesselForward, Vector3d.Exclude(vesselStarboard, targetForward))
+                * Mathf.Deg2Rad;
             if (Vector3d.Angle(vesselTop, Vector3d.Exclude(vesselStarboard, targetForward)) > 90)
                 Phi[0] *= -1;
 
-            Phi[1] = Vector3d.Angle(vesselTop, Vector3d.Exclude(vesselForward, targetTop)) * Mathf.Deg2Rad;
+            Phi[1] =
+                Vector3d.Angle(vesselTop, Vector3d.Exclude(vesselForward, targetTop))
+                * Mathf.Deg2Rad;
             if (Vector3d.Angle(vesselStarboard, Vector3d.Exclude(vesselForward, targetTop)) > 90)
                 Phi[1] *= -1;
 
-            Phi[2] = Vector3d.Angle(vesselForward, Vector3d.Exclude(vesselTop, targetForward)) * Mathf.Deg2Rad;
+            Phi[2] =
+                Vector3d.Angle(vesselForward, Vector3d.Exclude(vesselTop, targetForward))
+                * Mathf.Deg2Rad;
             if (Vector3d.Angle(vesselStarboard, Vector3d.Exclude(vesselTop, targetForward)) > 90)
                 Phi[2] *= -1;
 
@@ -196,7 +227,8 @@ namespace RemoteTech.FlightComputer
         {
             if (thisVessel != null)
             {
-                VesselRotation = thisVessel.ReferenceTransform.rotation * Quaternion.Euler(-90, 0, 0);
+                VesselRotation =
+                    thisVessel.ReferenceTransform.rotation * Quaternion.Euler(-90, 0, 0);
                 vesselForward = VesselRotation * Vector3d.forward;
                 vesselTop = VesselRotation * Vector3d.up;
                 vesselStarboard = VesselRotation * Vector3d.right;
@@ -249,9 +281,17 @@ namespace RemoteTech.FlightComputer
         public double ChangeRate { get; set; }
         private bool unWinding;
 
-        public PIDLoop() : this(1, 0, 0) { }
+        public PIDLoop()
+            : this(1, 0, 0) { }
 
-        public PIDLoop(double kp, double ki, double kd, double maxoutput = double.MaxValue, double minoutput = double.MinValue, bool extraUnwind = false)
+        public PIDLoop(
+            double kp,
+            double ki,
+            double kd,
+            double maxoutput = double.MaxValue,
+            double minoutput = double.MinValue,
+            bool extraUnwind = false
+        )
         {
             Kp = kp;
             Ki = ki;
@@ -316,7 +356,7 @@ namespace RemoteTech.FlightComputer
             {
                 dTerm = -ChangeRate * Kd;
             }
-            
+
             Output = pTerm + iTerm + dTerm;
             if (Output > MaxOutput)
             {
@@ -335,14 +375,16 @@ namespace RemoteTech.FlightComputer
                     iTerm = Output - Math.Max(pTerm + dTerm, MinOutput);
                 }
             }
-            
+
             Input = input;
             Error = error;
             PTerm = pTerm;
             ITerm = iTerm;
             DTerm = dTerm;
-            if (Ki != 0) ErrorSum = iTerm / Ki;
-            else ErrorSum = 0;
+            if (Ki != 0)
+                ErrorSum = iTerm / Ki;
+            else
+                ErrorSum = 0;
             return Output;
         }
 
@@ -354,13 +396,27 @@ namespace RemoteTech.FlightComputer
 
         public override string ToString()
         {
-            return string.Format("PIDLoop(Kp:{0}, Ki:{1}, Kd:{2}, Setpoint:{3}, Error:{4}, Output:{5})",
-                Kp, Ki, Kd, Setpoint, Error, Output);
+            return string.Format(
+                "PIDLoop(Kp:{0}, Ki:{1}, Kd:{2}, Setpoint:{3}, Error:{4}, Output:{5})",
+                Kp,
+                Ki,
+                Kd,
+                Setpoint,
+                Error,
+                Output
+            );
         }
 
         public string ConstrutorString()
         {
-            return string.Format("pidloop({0}, {1}, {2}, {3}, {4})", Ki, Kp, Kd, MaxOutput, ExtraUnwind);
+            return string.Format(
+                "pidloop({0}, {1}, {2}, {3}, {4})",
+                Ki,
+                Kp,
+                Kd,
+                MaxOutput,
+                ExtraUnwind
+            );
         }
     }
 
@@ -403,7 +459,12 @@ namespace RemoteTech.FlightComputer
             TorqueAdjust = new MovingAverage();
         }
 
-        public double Update(double input, double setpoint, double MomentOfInertia, double maxOutput)
+        public double Update(
+            double input,
+            double setpoint,
+            double MomentOfInertia,
+            double maxOutput
+        )
         {
             I = MomentOfInertia;
 
@@ -427,7 +488,10 @@ namespace RemoteTech.FlightComputer
     {
         public List<double> Values { get; set; }
         public double Mean { get; private set; }
-        public int ValueCount { get { return Values.Count; } }
+        public int ValueCount
+        {
+            get { return Values.Count; }
+        }
         public int SampleLimit { get; set; }
 
         public MovingAverage()
@@ -447,7 +511,8 @@ namespace RemoteTech.FlightComputer
 
         public double Update(double value)
         {
-            if (double.IsInfinity(value) || double.IsNaN(value)) return value;
+            if (double.IsInfinity(value) || double.IsNaN(value))
+                return value;
 
             Values.Add(value);
 
@@ -512,17 +577,60 @@ namespace RemoteTech.FlightComputer
     /// </summary>
     public class Vector6
     {
-        public Vector3d positive = Vector3d.zero, negative = Vector3d.zero;
-        public enum Direction { FORWARD = 0, BACK = 1, UP = 2, DOWN = 3, RIGHT = 4, LEFT = 5 };
-        public static readonly Vector3d[] directions = { Vector3d.forward, Vector3d.back, Vector3d.up, Vector3d.down, Vector3d.right, Vector3d.left };
+        public Vector3d positive = Vector3d.zero,
+            negative = Vector3d.zero;
+
+        public enum Direction
+        {
+            FORWARD = 0,
+            BACK = 1,
+            UP = 2,
+            DOWN = 3,
+            RIGHT = 4,
+            LEFT = 5,
+        };
+
+        public static readonly Vector3d[] directions =
+        {
+            Vector3d.forward,
+            Vector3d.back,
+            Vector3d.up,
+            Vector3d.down,
+            Vector3d.right,
+            Vector3d.left,
+        };
         public static readonly Direction[] Values = (Direction[])Enum.GetValues(typeof(Direction));
 
-        public double forward { get { return positive.z; } set { positive.z = value; } }
-        public double back { get { return negative.z; } set { negative.z = value; } }
-        public double up { get { return positive.y; } set { positive.y = value; } }
-        public double down { get { return negative.y; } set { negative.y = value; } }
-        public double right { get { return positive.x; } set { positive.x = value; } }
-        public double left { get { return negative.x; } set { negative.x = value; } }
+        public double forward
+        {
+            get { return positive.z; }
+            set { positive.z = value; }
+        }
+        public double back
+        {
+            get { return negative.z; }
+            set { negative.z = value; }
+        }
+        public double up
+        {
+            get { return positive.y; }
+            set { positive.y = value; }
+        }
+        public double down
+        {
+            get { return negative.y; }
+            set { negative.y = value; }
+        }
+        public double right
+        {
+            get { return positive.x; }
+            set { positive.x = value; }
+        }
+        public double left
+        {
+            get { return negative.x; }
+            set { negative.x = value; }
+        }
 
         public double this[Direction index]
         {
@@ -571,9 +679,7 @@ namespace RemoteTech.FlightComputer
             }
         }
 
-        public Vector6()
-        {
-        }
+        public Vector6() { }
 
         public Vector6(Vector3d positive, Vector3d negative)
         {

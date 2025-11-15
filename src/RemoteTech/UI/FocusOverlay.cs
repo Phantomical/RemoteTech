@@ -24,14 +24,16 @@ namespace RemoteTech.UI
             public UnityEngine.Events.UnityAction<bool> cb;
             public KSP.UI.Screens.TrackingStationWidget button;
         }
- 
+
         private Rect PositionFrame
         {
             get
             {
                 float scale = GameSettings.UI_SCALE;
 
-                var pos = KSP.UI.UIMainCamera.Camera.WorldToScreenPoint(mButtonImg.rectTransform.position);
+                var pos = KSP.UI.UIMainCamera.Camera.WorldToScreenPoint(
+                    mButtonImg.rectTransform.position
+                );
 
                 var rect = new Rect(0, 0, 250, 500);
                 if (HighLogic.LoadedSceneIsFlight)
@@ -55,14 +57,18 @@ namespace RemoteTech.UI
             RemoveTrackingListeners();
 
             // Adds a click listener to all the tracking station objects
-            var TSWList = UnityEngine.Object.FindObjectsOfType<KSP.UI.Screens.TrackingStationWidget>();
+            var TSWList =
+                UnityEngine.Object.FindObjectsOfType<KSP.UI.Screens.TrackingStationWidget>();
             foreach (var tsw in TSWList)
             {
                 if (tsw)
                 {
                     var tb = new TrackingButton();
                     tb.button = tsw;
-                    tb.cb = (bool st) => { mFocus.setSelection(tb.button.vessel); };
+                    tb.cb = (bool st) =>
+                    {
+                        mFocus.setSelection(tb.button.vessel);
+                    };
                     tsw.toggle.onValueChanged.AddListener(tb.cb);
                     mTrackButtonListener.Add(tb);
                 }
@@ -85,8 +91,19 @@ namespace RemoteTech.UI
             satellite = RTUtil.LoadImage("texSatellite");
 
             // New AppLauncher Button instead of floating satellite button
-            var actives = KSP.UI.Screens.ApplicationLauncher.AppScenes.TRACKSTATION | KSP.UI.Screens.ApplicationLauncher.AppScenes.MAPVIEW;
-            mButton = KSP.UI.Screens.ApplicationLauncher.Instance.AddModApplication(OnButtonDown, OnButtonUp, null, null, null, null, actives, satellite);
+            var actives =
+                KSP.UI.Screens.ApplicationLauncher.AppScenes.TRACKSTATION
+                | KSP.UI.Screens.ApplicationLauncher.AppScenes.MAPVIEW;
+            mButton = KSP.UI.Screens.ApplicationLauncher.Instance.AddModApplication(
+                OnButtonDown,
+                OnButtonUp,
+                null,
+                null,
+                null,
+                null,
+                actives,
+                satellite
+            );
             mButtonImg = mButton.GetComponent<UnityEngine.UI.Image>();
 
             RebuildTrackingListeners();
@@ -100,7 +117,7 @@ namespace RemoteTech.UI
             MapView.OnEnterMapView -= OnEnterMapView;
             MapView.OnExitMapView -= OnExitMapView;
 
-            if (inMapView) 
+            if (inMapView)
             {
                 // to let it clean up stuff, because we don't receive this event any more
                 OnExitMapView();
@@ -118,17 +135,19 @@ namespace RemoteTech.UI
             RebuildTrackingListeners();
             RTCore.Instance.OnFrameUpdate -= Update;
         }
-       
+
         public void OnVDestroy(Vessel v)
         {
-            if(HighLogic.LoadedScene == GameScenes.TRACKSTATION)
+            if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
                 RTCore.Instance.AddOnceOnFrameUpdate(Update);
         }
+
         public void OnVRecover(ProtoVessel v, bool t)
         {
             if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
                 RTCore.Instance.AddOnceOnFrameUpdate(Update);
         }
+
         public void OnVTerminate(ProtoVessel v)
         {
             if (HighLogic.LoadedScene == GameScenes.TRACKSTATION)
@@ -171,7 +190,8 @@ namespace RemoteTech.UI
         // Fixed drawing mechanics
         public void Draw()
         {
-            if (!mShowOverlay) return;
+            if (!mShowOverlay)
+                return;
 
             GUILayout.BeginArea(PositionFrame);
             {
@@ -179,7 +199,10 @@ namespace RemoteTech.UI
                 InputLockManager.RemoveControlLock("RTMapViewSatelliteList");
                 if (this.PositionFrame.ContainsMouse())
                 {
-                    InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS | ControlTypes.MAP, "RTMapViewSatelliteList");
+                    InputLockManager.SetControlLock(
+                        ControlTypes.CAMERACONTROLS | ControlTypes.MAP,
+                        "RTMapViewSatelliteList"
+                    );
                 }
                 mFocus.Draw();
             }

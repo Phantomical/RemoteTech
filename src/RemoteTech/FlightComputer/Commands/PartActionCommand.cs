@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Text;
 using System.Linq;
+using System.Text;
 using RemoteTech.FlightComputer.Commands;
 using static RemoteTech.FlightComputer.UIPartActionMenuPatcher;
 #if !KSP131
@@ -9,30 +9,32 @@ using Expansions.Serenity;
 
 namespace RemoteTech.FlightComputer
 {
-    
     public class PartActionCommand : AbstractCommand
     {
         // Guiname of the BaseField
         [Persistent]
         public string GUIName;
+
         // Name of the BaseField
         [Persistent]
         public string Name;
+
         // flight id of the part
         [Persistent]
         public uint flightID;
+
         // PartModule of the part
         [Persistent]
         public string Module;
 
         // new value for the field
         public object NewValue;
+
         // the value as a string, once loaded from config
         public string NewValueString;
+
         // the original BaseField
         public BaseField BaseField = null;
-        
-
 
         public override string Description
         {
@@ -53,10 +55,7 @@ namespace RemoteTech.FlightComputer
         }
         public override string ShortName
         {
-            get
-            {
-                return (BaseField != null) ? BaseField.guiName : "none";
-            }
+            get { return (BaseField != null) ? BaseField.guiName : "none"; }
         }
 
         public override bool Pop(FlightComputer f)
@@ -70,8 +69,11 @@ namespace RemoteTech.FlightComputer
                     {
                         if (NewValue != null)
                         {
-                            var newfield = new WrappedField(BaseField, WrappedField.KspFieldFromBaseField(BaseField));
-                            if(newfield.NewValueFromString(NewValueString))
+                            var newfield = new WrappedField(
+                                BaseField,
+                                WrappedField.KspFieldFromBaseField(BaseField)
+                            );
+                            if (newfield.NewValueFromString(NewValueString))
                             {
                                 newfield.Invoke();
                             }
@@ -79,7 +81,7 @@ namespace RemoteTech.FlightComputer
                     }
                     else
                     {
-                        // invoke the field value change 
+                        // invoke the field value change
                         field.Invoke();
                     }
 
@@ -94,8 +96,14 @@ namespace RemoteTech.FlightComputer
                             if (f.Vessel.parts[i].Modules[j] is ModuleRoboticServoPiston)
                             {
                                 // stock bug: targetExtension set by player in PartActionMenu is not passed to targetPosition unlike other robotic parts like hinge
-                                var agModule = f.Vessel.parts[i].Modules[j] as ModuleRoboticServoPiston;
-                                RTUtil.SetInstanceField(typeof(ModuleRoboticServoPiston), agModule, "targetPosition", agModule.targetExtension);
+                                var agModule =
+                                    f.Vessel.parts[i].Modules[j] as ModuleRoboticServoPiston;
+                                RTUtil.SetInstanceField(
+                                    typeof(ModuleRoboticServoPiston),
+                                    agModule,
+                                    "targetPosition",
+                                    agModule.targetExtension
+                                );
                             }
                         }
                     }
@@ -103,8 +111,12 @@ namespace RemoteTech.FlightComputer
                 }
                 catch (Exception invokeException)
                 {
-                    RTLog.Notify("BaseField InvokeAction() by '{0}' with message: {1}",
-                                 RTLogLevel.LVL1, this.BaseField.guiName, invokeException.Message);
+                    RTLog.Notify(
+                        "BaseField InvokeAction() by '{0}' with message: {1}",
+                        RTLogLevel.LVL1,
+                        this.BaseField.guiName,
+                        invokeException.Message
+                    );
                 }
             }
 
@@ -118,7 +130,7 @@ namespace RemoteTech.FlightComputer
                 BaseField = baseField,
                 GUIName = baseField.guiName,
                 TimeStamp = RTUtil.GameTime,
-                NewValue = newValue
+                NewValue = newValue,
             };
         }
 
@@ -145,8 +157,14 @@ namespace RemoteTech.FlightComputer
                 this.Name = n.GetValue("Name");
                 NewValueString = n.GetValue("NewValue");
 
-                RTLog.Notify("Try to load an PartActionCommand from persistent with {0},{1},{2},{3},{4}",
-                             PartId, this.flightID, this.Module, this.GUIName, this.Name);
+                RTLog.Notify(
+                    "Try to load an PartActionCommand from persistent with {0},{1},{2},{3},{4}",
+                    PartId,
+                    this.flightID,
+                    this.Module,
+                    this.GUIName,
+                    this.Name
+                );
 
                 Part part = null;
                 var partlist = FlightGlobals.ActiveVessel.parts;
@@ -162,13 +180,16 @@ namespace RemoteTech.FlightComputer
                     part = partlist.Where(p => p.flightID == this.flightID).FirstOrDefault();
                 }
 
-                if (part == null) return false;
+                if (part == null)
+                    return false;
 
                 PartModule partmodule = part.Modules[Module];
-                if (partmodule == null) return false;
+                if (partmodule == null)
+                    return false;
 
                 BaseFieldList fieldList = new BaseFieldList(partmodule);
-                if (fieldList.Count <= 0) return false;
+                if (fieldList.Count <= 0)
+                    return false;
 
                 this.BaseField = fieldList[this.Name];
                 return (this.BaseField != null);
@@ -183,9 +204,12 @@ namespace RemoteTech.FlightComputer
         public override void Save(ConfigNode n, FlightComputer fc)
         {
             PartModule pm = (BaseField.host as PartModule);
-            if(pm == null)
+            if (pm == null)
             {
-                RTLog.Notify("On PartActionCommand.Save(): Can't save because BaseField.host is not a PartModule instance. Type is: {0}", BaseField.host.GetType());
+                RTLog.Notify(
+                    "On PartActionCommand.Save(): Can't save because BaseField.host is not a PartModule instance. Type is: {0}",
+                    BaseField.host.GetType()
+                );
                 return;
             }
 
@@ -198,5 +222,5 @@ namespace RemoteTech.FlightComputer
 
             base.Save(n, fc);
         }
-    }    
+    }
 }

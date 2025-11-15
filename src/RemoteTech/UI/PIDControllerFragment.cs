@@ -1,9 +1,9 @@
-﻿using RemoteTech.FlightComputer;
-using RemoteTech.FlightComputer.Commands;
-using System;
+﻿using System;
 using System.Collections;
-using UnityEngine;
 using KSP.Localization;
+using RemoteTech.FlightComputer;
+using RemoteTech.FlightComputer.Commands;
+using UnityEngine;
 
 namespace RemoteTech.UI
 {
@@ -13,8 +13,8 @@ namespace RemoteTech.UI
         private Action mOnClickQueue;
 
         private string kp = "0",
-                       ki = "0",
-                       kd = "0";
+            ki = "0",
+            kd = "0";
 
         public PIDControllerFragment(FlightComputer.FlightComputer fc, Action queue)
         {
@@ -36,101 +36,193 @@ namespace RemoteTech.UI
                 ////////////////
                 //PITCH INFO
                 ////////////////
-                GUILayout.Label(new GUIContent("<b>" + Localizer.Format("#RT_PIDControllerFragment_Pitch") + "</b>"));//"Pitch"
+                GUILayout.Label(
+                    new GUIContent(
+                        "<b>" + Localizer.Format("#RT_PIDControllerFragment_Pitch") + "</b>"
+                    )
+                ); //"Pitch"
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_TorqueMoI"), Localizer.Format("#RT_PIDControllerFragment_TorqueMoI_desc")));//"Torque-MoI Rate: ", "Current rate of torque to mass of inertia"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_TorqueMoI"),
+                            Localizer.Format("#RT_PIDControllerFragment_TorqueMoI_desc")
+                        )
+                    ); //"Torque-MoI Rate: ", "Current rate of torque to mass of inertia"
                     GUILayout.FlexibleSpace();
                     GUILayout.Label(new GUIContent((Torque[0] / MoI[0]).ToString("F3")));
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_DeviationError"), Localizer.Format("#RT_PIDControllerFragment_DeviationError_desc")));//"Deviation Error: ", "Deviation from the target point"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_DeviationError"),
+                            Localizer.Format("#RT_PIDControllerFragment_DeviationError_desc")
+                        )
+                    ); //"Deviation Error: ", "Deviation from the target point"
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label(new GUIContent(mFlightComputer.PIDController.getDeviationErrors()[0].ToString("F2")));
+                    GUILayout.Label(
+                        new GUIContent(
+                            mFlightComputer.PIDController.getDeviationErrors()[0].ToString("F2")
+                        )
+                    );
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_Output"), Localizer.Format("#RT_PIDControllerFragment_Output_desc")));//"Output: ", "Output of Flight Control State"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_Output"),
+                            Localizer.Format("#RT_PIDControllerFragment_Output_desc")
+                        )
+                    ); //"Output: ", "Output of Flight Control State"
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label(new GUIContent(mFlightComputer.Vessel.ctrlState.pitch.ToString("F2")));
+                    GUILayout.Label(
+                        new GUIContent(mFlightComputer.Vessel.ctrlState.pitch.ToString("F2"))
+                    );
                 }
                 GUILayout.EndHorizontal();
 
                 ////////////////
                 //ROLL INFO
                 ////////////////
-                GUILayout.Label(new GUIContent("<b>" + Localizer.Format("#RT_PIDControllerFragment_Roll") + "</b>"));//"Roll"
+                GUILayout.Label(
+                    new GUIContent(
+                        "<b>" + Localizer.Format("#RT_PIDControllerFragment_Roll") + "</b>"
+                    )
+                ); //"Roll"
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_TorqueMoI"), Localizer.Format("#RT_PIDControllerFragment_TorqueMoI_desc")));//"Torque-MoI Rate: ", "Current rate of torque to mass of inertia"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_TorqueMoI"),
+                            Localizer.Format("#RT_PIDControllerFragment_TorqueMoI_desc")
+                        )
+                    ); //"Torque-MoI Rate: ", "Current rate of torque to mass of inertia"
                     GUILayout.FlexibleSpace();
                     GUILayout.Label(new GUIContent((Torque[1] / MoI[1]).ToString("F3")));
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_DeviationError"), Localizer.Format("#RT_PIDControllerFragment_DeviationError_desc")));//"Deviation Error: ", "Deviation from the target point"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_DeviationError"),
+                            Localizer.Format("#RT_PIDControllerFragment_DeviationError_desc")
+                        )
+                    ); //"Deviation Error: ", "Deviation from the target point"
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label(new GUIContent(mFlightComputer.PIDController.getDeviationErrors()[1].ToString("F2")));
+                    GUILayout.Label(
+                        new GUIContent(
+                            mFlightComputer.PIDController.getDeviationErrors()[1].ToString("F2")
+                        )
+                    );
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_Output"), Localizer.Format("#RT_PIDControllerFragment_Output_desc")));//"Output: ", "Output of Flight Control State"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_Output"),
+                            Localizer.Format("#RT_PIDControllerFragment_Output_desc")
+                        )
+                    ); //"Output: ", "Output of Flight Control State"
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label(new GUIContent(mFlightComputer.Vessel.ctrlState.roll.ToString("F2")));
+                    GUILayout.Label(
+                        new GUIContent(mFlightComputer.Vessel.ctrlState.roll.ToString("F2"))
+                    );
                 }
                 GUILayout.EndHorizontal();
 
                 ////////////////
                 //YAW INFO
                 ////////////////
-                GUILayout.Label(new GUIContent("<b>" + Localizer.Format("#RT_PIDControllerFragment_Yaw") + "</b>"));//"Yaw"
+                GUILayout.Label(
+                    new GUIContent(
+                        "<b>" + Localizer.Format("#RT_PIDControllerFragment_Yaw") + "</b>"
+                    )
+                ); //"Yaw"
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_TorqueMoI"), Localizer.Format("#RT_PIDControllerFragment_TorqueMoI_desc")));//"Torque-MoI Rate: ", "Current rate of torque to mass of inertia"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_TorqueMoI"),
+                            Localizer.Format("#RT_PIDControllerFragment_TorqueMoI_desc")
+                        )
+                    ); //"Torque-MoI Rate: ", "Current rate of torque to mass of inertia"
                     GUILayout.FlexibleSpace();
                     GUILayout.Label(new GUIContent((Torque[2] / MoI[2]).ToString("F3")));
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_DeviationError"), Localizer.Format("#RT_PIDControllerFragment_DeviationError_desc")));//"Deviation Error: ", "Deviation from the target point"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_DeviationError"),
+                            Localizer.Format("#RT_PIDControllerFragment_DeviationError_desc")
+                        )
+                    ); //"Deviation Error: ", "Deviation from the target point"
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label(new GUIContent(mFlightComputer.PIDController.getDeviationErrors()[2].ToString("F2")));
+                    GUILayout.Label(
+                        new GUIContent(
+                            mFlightComputer.PIDController.getDeviationErrors()[2].ToString("F2")
+                        )
+                    );
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_Output"), Localizer.Format("#RT_PIDControllerFragment_Output_desc")));//"Output: ", "Output of Flight Control State"
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_Output"),
+                            Localizer.Format("#RT_PIDControllerFragment_Output_desc")
+                        )
+                    ); //"Output: ", "Output of Flight Control State"
                     GUILayout.FlexibleSpace();
-                    GUILayout.Label(new GUIContent(mFlightComputer.Vessel.ctrlState.yaw.ToString("F2")));
+                    GUILayout.Label(
+                        new GUIContent(mFlightComputer.Vessel.ctrlState.yaw.ToString("F2"))
+                    );
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.Space(10);
-                GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_PIDHelp")));//"See ni.com/white-paper/3782/en"
+                GUILayout.Label(
+                    new GUIContent(Localizer.Format("#RT_PIDControllerFragment_PIDHelp"))
+                ); //"See ni.com/white-paper/3782/en"
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_Kp"), Localizer.Format("#RT_PIDControllerFragment_Kp_desc")));//"Proportional gain", "(1) With I and D terms set to 0, increase until the output of the loop oscillates."
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_Kp"),
+                            Localizer.Format("#RT_PIDControllerFragment_Kp_desc")
+                        )
+                    ); //"Proportional gain", "(1) With I and D terms set to 0, increase until the output of the loop oscillates."
                     RTUtil.TextField(ref kp, GUILayout.Width(50), GUILayout.ExpandWidth(false));
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_Ki"), Localizer.Format("#RT_PIDControllerFragment_Ki_desc")));//"Integral", "(2) Increase to stop the oscillations."
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_Ki"),
+                            Localizer.Format("#RT_PIDControllerFragment_Ki_desc")
+                        )
+                    ); //"Integral", "(2) Increase to stop the oscillations."
                     RTUtil.TextField(ref ki, GUILayout.Width(50), GUILayout.ExpandWidth(false));
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_Kd"), Localizer.Format("#RT_PIDControllerFragment_Kd_desc")));//"Derivative", "(3) Increase until the loop is acceptably quick to its target point."
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_Kd"),
+                            Localizer.Format("#RT_PIDControllerFragment_Kd_desc")
+                        )
+                    ); //"Derivative", "(3) Increase until the loop is acceptably quick to its target point."
                     RTUtil.TextField(ref kd, GUILayout.Width(50), GUILayout.ExpandWidth(false));
                 }
                 GUILayout.EndHorizontal();
@@ -139,12 +231,30 @@ namespace RemoteTech.UI
 
                 GUILayout.BeginHorizontal();
                 {
-                    RTUtil.Button(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_button1"), Localizer.Format("#RT_PIDControllerFragment_button1_desc")),//"SAVE", "Save all values persistently."
-                        OnSaveClick, GUILayout.Width(width3));
-                    RTUtil.Button(new GUIContent(Localizer.Format("#RT_PIDControllerFragment_button2"), Localizer.Format("#RT_PIDControllerFragment_button2_desc")),//"APLY", "Interface all values to Flight PID Controller."
-                        () => RTCore.Instance.StartCoroutine(OnApplyClick()), GUILayout.Width(width3));
-                    RTUtil.Button(new GUIContent(">>", Localizer.Format("#RT_PIDControllerFragment_Queue_desc")),//"Toggles the queue and delay functionality."
-                        mOnClickQueue, GUILayout.Width(width3));
+                    RTUtil.Button(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_button1"),
+                            Localizer.Format("#RT_PIDControllerFragment_button1_desc")
+                        ), //"SAVE", "Save all values persistently."
+                        OnSaveClick,
+                        GUILayout.Width(width3)
+                    );
+                    RTUtil.Button(
+                        new GUIContent(
+                            Localizer.Format("#RT_PIDControllerFragment_button2"),
+                            Localizer.Format("#RT_PIDControllerFragment_button2_desc")
+                        ), //"APLY", "Interface all values to Flight PID Controller."
+                        () => RTCore.Instance.StartCoroutine(OnApplyClick()),
+                        GUILayout.Width(width3)
+                    );
+                    RTUtil.Button(
+                        new GUIContent(
+                            ">>",
+                            Localizer.Format("#RT_PIDControllerFragment_Queue_desc")
+                        ), //"Toggles the queue and delay functionality."
+                        mOnClickQueue,
+                        GUILayout.Width(width3)
+                    );
                 }
                 GUILayout.EndHorizontal();
             }
@@ -160,7 +270,9 @@ namespace RemoteTech.UI
                 ki = RTUtil.ConstrictNum(ki, false);
                 kd = RTUtil.ConstrictNum(kd, false);
 
-                mFlightComputer.Enqueue(PIDCommand.WithNewChanges(Double.Parse(kp), Double.Parse(ki), Double.Parse(kd)));
+                mFlightComputer.Enqueue(
+                    PIDCommand.WithNewChanges(Double.Parse(kp), Double.Parse(ki), Double.Parse(kd))
+                );
             }
         }
 

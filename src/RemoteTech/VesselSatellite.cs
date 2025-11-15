@@ -1,8 +1,8 @@
-﻿using RemoteTech.Modules;
-using RemoteTech.SimpleTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RemoteTech.Modules;
+using RemoteTech.SimpleTypes;
 using UnityEngine;
 
 namespace RemoteTech
@@ -40,13 +40,18 @@ namespace RemoteTech
         /// <summary>Gets if the satellite is actually powered or not.</summary>
         public bool Powered
         {
-            get { return (PowerShutdownFlag)? false : SignalProcessors.Any(s => s.Powered); }
+            get { return (PowerShutdownFlag) ? false : SignalProcessors.Any(s => s.Powered); }
         }
 
         /// <summary>Gets if the satellite is capable to forward other signals.</summary>
         public bool CanRelaySignal
         {
-            get { return RTSettings.Instance.SignalRelayEnabled ? SignalProcessors.Any(s => s.CanRelaySignal && !(s is ModuleSPUPassive)) : true; }
+            get
+            {
+                return RTSettings.Instance.SignalRelayEnabled
+                    ? SignalProcessors.Any(s => s.CanRelaySignal && !(s is ModuleSPUPassive))
+                    : true;
+            }
         }
 
         /// <summary>Indicates whether the satellite is in radio blackout.</summary>
@@ -81,7 +86,10 @@ namespace RemoteTech
         {
             get
             {
-                return RTUtil.CachePerFrame(ref _localControl, () => SignalProcessor.Vessel.HasLocalControl());
+                return RTUtil.CachePerFrame(
+                    ref _localControl,
+                    () => SignalProcessor.Vessel.HasLocalControl()
+                );
             }
         }
 
@@ -130,7 +138,10 @@ namespace RemoteTech
         {
             if (signalProcessors == null)
             {
-                RTLog.Notify("VesselSatellite constructor: signalProcessor parameter is null", RTLogLevel.LVL4);
+                RTLog.Notify(
+                    "VesselSatellite constructor: signalProcessor parameter is null",
+                    RTLogLevel.LVL4
+                );
                 throw new ArgumentNullException();
             }
 

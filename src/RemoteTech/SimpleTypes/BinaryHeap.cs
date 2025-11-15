@@ -7,16 +7,26 @@ namespace RemoteTech.SimpleTypes
     // Do not modify sorting order externally! Increase/Decrease().
     public class BinaryHeap<T> : IEnumerable<T>
     {
-        public int Count { get { return mData.Count; } }
+        public int Count
+        {
+            get { return mData.Count; }
+        }
 
-        public int Capacity { get { return mData.Capacity; } }
+        public int Capacity
+        {
+            get { return mData.Capacity; }
+        }
 
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
 
         private readonly List<T> mData;
         private readonly Comparer<T> mComparer;
 
-        public BinaryHeap() : this(0) { }
+        public BinaryHeap()
+            : this(0) { }
 
         public BinaryHeap(int size)
         {
@@ -67,7 +77,6 @@ namespace RemoteTech.SimpleTypes
             // Place the item where it belongs.
             mData[id] = item;
         }
-
 
         public void Decrease(int id)
         {

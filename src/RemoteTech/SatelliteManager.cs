@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using RemoteTech.Modules;
 
 namespace RemoteTech
@@ -76,7 +76,8 @@ namespace RemoteTech
         {
             RTLog.Notify("SatelliteManager: Unregister({0})", spu);
             // Return if nothing to unregister.
-            if (!_loadedSpuCache.ContainsKey(key)) return;
+            if (!_loadedSpuCache.ContainsKey(key))
+                return;
             // Find instance of the signal processor.
             var instanceId = _loadedSpuCache[key].FindIndex(x => x == spu);
             if (instanceId == -1)
@@ -118,7 +119,8 @@ namespace RemoteTech
             Guid key = vessel.protoVessel.vesselID;
             RTLog.Notify("SatelliteManager: RegisterProto({0}, {1})", vessel.vesselName, key);
             // Return if there are still signal processors loaded.
-            if (_loadedSpuCache.ContainsKey(vessel.id)) {
+            if (_loadedSpuCache.ContainsKey(vessel.id))
+            {
                 _loadedSpuCache.Remove(vessel.id);
             }
 
@@ -126,7 +128,7 @@ namespace RemoteTech
             if (spu == null)
                 return;
 
-            var protos = new List<ISignalProcessor> {spu};
+            var protos = new List<ISignalProcessor> { spu };
             _satelliteCache[key] = new VesselSatellite(protos);
             OnRegister(_satelliteCache[key]);
         }
@@ -203,7 +205,6 @@ namespace RemoteTech
         public static bool IsSignalProcessor(this ProtoPartModuleSnapshot ppms)
         {
             return ppms.GetBool("IsRTSignalProcessor");
-
         }
 
         public static bool IsSignalProcessor(this PartModule pm)
@@ -219,17 +220,26 @@ namespace RemoteTech
 
             if (v.loaded && v.parts.Count > 0)
             {
-                var partModuleList = v.Parts.SelectMany(p => p.Modules.Cast<PartModule>()).Where(pm => pm.IsSignalProcessor()).ToList();
+                var partModuleList = v
+                    .Parts.SelectMany(p => p.Modules.Cast<PartModule>())
+                    .Where(pm => pm.IsSignalProcessor())
+                    .ToList();
                 // try to look for a moduleSPU
-                result = partModuleList.FirstOrDefault(pm => pm.moduleName == "ModuleSPU") as ISignalProcessor ??
-                         partModuleList.FirstOrDefault() as ISignalProcessor;
+                result =
+                    partModuleList.FirstOrDefault(pm => pm.moduleName == "ModuleSPU")
+                        as ISignalProcessor
+                    ?? partModuleList.FirstOrDefault() as ISignalProcessor;
             }
             else
             {
-                var protoPartList = v.protoVessel.protoPartSnapshots.SelectMany(x => x.modules).Where(ppms => ppms.IsSignalProcessor()).ToList();
+                var protoPartList = v
+                    .protoVessel.protoPartSnapshots.SelectMany(x => x.modules)
+                    .Where(ppms => ppms.IsSignalProcessor())
+                    .ToList();
                 // try to look for a moduleSPU on a unloaded vessel
-                var protoPartProcessor = protoPartList.FirstOrDefault(ppms => ppms.moduleName == "ModuleSPU") ??
-                                         protoPartList.FirstOrDefault();
+                var protoPartProcessor =
+                    protoPartList.FirstOrDefault(ppms => ppms.moduleName == "ModuleSPU")
+                    ?? protoPartList.FirstOrDefault();
 
                 // convert the found protoPartSnapshots to a ProtoSignalProcessor
                 if (protoPartProcessor != null)
@@ -256,9 +266,13 @@ namespace RemoteTech
             RTLog.Notify("HasCommandStation({0})", v.vesselName);
             if (v.loaded && v.parts.Count > 0)
             {
-                return v.Parts.SelectMany(p => p.Modules.Cast<PartModule>()).Any(pm => pm.IsCommandStation());
+                return v
+                    .Parts.SelectMany(p => p.Modules.Cast<PartModule>())
+                    .Any(pm => pm.IsCommandStation());
             }
-            return v.protoVessel.protoPartSnapshots.SelectMany(x => x.modules).Any(pm => pm.IsCommandStation());
+            return v
+                .protoVessel.protoPartSnapshots.SelectMany(x => x.modules)
+                .Any(pm => pm.IsCommandStation());
         }
     }
 }

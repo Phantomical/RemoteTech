@@ -4,30 +4,33 @@ namespace RemoteTech.FlightComputer.Commands
 {
     public class FlightControlCommand : AbstractCommand
     {
-        [Persistent] public bool ignorePitchOutput;
-        [Persistent] public bool ignoreHeadingOutput;
-        [Persistent] public bool ignoreRollOutput;
+        [Persistent]
+        public bool ignorePitchOutput;
+
+        [Persistent]
+        public bool ignoreHeadingOutput;
+
+        [Persistent]
+        public bool ignoreRollOutput;
 
         private bool mAbort;
         private string stringReady = "";
 
         public override string ShortName
         {
-            get
-            {
-                return "Pitch, Heading and Roll controls";
-            }
+            get { return "Pitch, Heading and Roll controls"; }
         }
 
         public override string Description
         {
-            get
-            {
-                return ShortName + ":" + Environment.NewLine + stringReady + base.Description;
-            }
+            get { return ShortName + ":" + Environment.NewLine + stringReady + base.Description; }
         }
 
-        public static FlightControlCommand WithPHR(bool ignore_pitch, bool ignore_heading, bool ignore_roll)
+        public static FlightControlCommand WithPHR(
+            bool ignore_pitch,
+            bool ignore_heading,
+            bool ignore_roll
+        )
         {
             return new FlightControlCommand()
             {
@@ -44,7 +47,7 @@ namespace RemoteTech.FlightComputer.Commands
             {
                 //remove active command if existing
                 var activeCommand = FlightControlCommand.findActiveControlCmd(fc);
-                if(activeCommand != null && activeCommand.CmdGuid != this.CmdGuid)
+                if (activeCommand != null && activeCommand.CmdGuid != this.CmdGuid)
                 {
                     activeCommand.Abort();
                 }
@@ -52,16 +55,31 @@ namespace RemoteTech.FlightComputer.Commands
                 //build custom string
                 var list = new string[3];
                 var count = 0;
-                if (ignorePitchOutput) { list[count++] = "Pitch ignored"; }
-                if (ignoreHeadingOutput) { list[count++] = "Heading ignored"; }
-                if (ignoreRollOutput) { list[count++] = "Roll ignored"; }
+                if (ignorePitchOutput)
+                {
+                    list[count++] = "Pitch ignored";
+                }
+                if (ignoreHeadingOutput)
+                {
+                    list[count++] = "Heading ignored";
+                }
+                if (ignoreRollOutput)
+                {
+                    list[count++] = "Roll ignored";
+                }
 
-                for(int i=0; i<count;i++)
+                for (int i = 0; i < count; i++)
                 {
                     stringReady += list[i];
-                    if (i < count -1) { stringReady += ", "; }
+                    if (i < count - 1)
+                    {
+                        stringReady += ", ";
+                    }
                 }
-                if (stringReady.Length > 0) { stringReady += Environment.NewLine; }
+                if (stringReady.Length > 0)
+                {
+                    stringReady += Environment.NewLine;
+                }
 
                 return true;
             }
@@ -72,11 +90,29 @@ namespace RemoteTech.FlightComputer.Commands
         {
             SteeringHelper.FlightOutputControlMask = 0; //blank off
 
-            if (mAbort || (!ignorePitchOutput && !ignoreHeadingOutput && !ignoreRollOutput)) { return true; }
+            if (mAbort || (!ignorePitchOutput && !ignoreHeadingOutput && !ignoreRollOutput))
+            {
+                return true;
+            }
 
-            if (ignorePitchOutput) { SteeringHelper.FlightOutputControlMask |= SteeringHelper.FlightControlOutput.IgnorePitch; }
-            if (ignoreHeadingOutput) { SteeringHelper.FlightOutputControlMask |= SteeringHelper.FlightControlOutput.IgnoreHeading; }
-            if (ignoreRollOutput) { SteeringHelper.FlightOutputControlMask |= SteeringHelper.FlightControlOutput.IgnoreRoll; }
+            if (ignorePitchOutput)
+            {
+                SteeringHelper.FlightOutputControlMask |= SteeringHelper
+                    .FlightControlOutput
+                    .IgnorePitch;
+            }
+            if (ignoreHeadingOutput)
+            {
+                SteeringHelper.FlightOutputControlMask |= SteeringHelper
+                    .FlightControlOutput
+                    .IgnoreHeading;
+            }
+            if (ignoreRollOutput)
+            {
+                SteeringHelper.FlightOutputControlMask |= SteeringHelper
+                    .FlightControlOutput
+                    .IgnoreRoll;
+            }
 
             return false;
         }
@@ -95,6 +131,9 @@ namespace RemoteTech.FlightComputer.Commands
             return null;
         }
 
-        public override void Abort() { mAbort = true; }
+        public override void Abort()
+        {
+            mAbort = true;
+        }
     }
 }

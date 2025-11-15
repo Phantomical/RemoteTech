@@ -5,7 +5,6 @@ namespace RemoteTech.SimpleTypes
 {
     public static class GUITextureButtonFactory
     {
-
         // Replaced with new texture handling mechanics.
         public static GUIStyle CreateFromFilename(String normal)
         {
@@ -14,14 +13,27 @@ namespace RemoteTech.SimpleTypes
         }
 
         // Replaced with new texture handling mechanics.
-        public static GUIStyle CreateFromFilename(String normal, String hover, String active, String focus)
+        public static GUIStyle CreateFromFilename(
+            String normal,
+            String hover,
+            String active,
+            String focus
+        )
         {
-            return CreateFromTextures(RTUtil.LoadImage(normal), RTUtil.LoadImage(hover),
-                RTUtil.LoadImage(active), RTUtil.LoadImage(focus));
+            return CreateFromTextures(
+                RTUtil.LoadImage(normal),
+                RTUtil.LoadImage(hover),
+                RTUtil.LoadImage(active),
+                RTUtil.LoadImage(focus)
+            );
         }
 
-        private static GUIStyle CreateFromTextures(Texture2D texNormal, Texture2D texHover,
-                                                   Texture2D texActive, Texture2D texFocus)
+        private static GUIStyle CreateFromTextures(
+            Texture2D texNormal,
+            Texture2D texHover,
+            Texture2D texActive,
+            Texture2D texFocus
+        )
         {
             return new GUIStyle()
             {

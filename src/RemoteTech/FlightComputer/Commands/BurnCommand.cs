@@ -4,27 +4,39 @@ namespace RemoteTech.FlightComputer.Commands
 {
     public class BurnCommand : AbstractCommand
     {
-        [Persistent] public float Throttle;
-        [Persistent] public double Duration;
-        [Persistent] public double DeltaV;
-        [Persistent] public string KaCItemId = string.Empty;
+        [Persistent]
+        public float Throttle;
 
-        public override int Priority { get { return 2; } }
+        [Persistent]
+        public double Duration;
+
+        [Persistent]
+        public double DeltaV;
+
+        [Persistent]
+        public string KaCItemId = string.Empty;
+
+        public override int Priority
+        {
+            get { return 2; }
+        }
 
         public override String Description
         {
             get
             {
-                return String.Format("Burn {0}, {1}", Throttle.ToString("P2"), burnLength()) + Environment.NewLine + base.Description;
+                return String.Format("Burn {0}, {1}", Throttle.ToString("P2"), burnLength())
+                    + Environment.NewLine
+                    + base.Description;
             }
         }
-        public override string ShortName 
-        { 
-            get { 
-                return String.Format("Execute burn for {0}", burnLength()); 
-            } 
+        public override string ShortName
+        {
+            get { return String.Format("Execute burn for {0}", burnLength()); }
         }
-        private string burnLength() {
+
+        private string burnLength()
+        {
             return Duration > 0 ? RTUtil.FormatDuration(Duration) : (DeltaV.ToString("F2") + "m/s");
         }
 
@@ -51,7 +63,9 @@ namespace RemoteTech.FlightComputer.Commands
             else if (DeltaV > 0)
             {
                 fcs.mainThrottle = Throttle;
-                DeltaV -= (Throttle * FlightCore.GetTotalThrust(f.Vessel) / f.Vessel.GetTotalMass()) * TimeWarp.deltaTime;
+                DeltaV -=
+                    (Throttle * FlightCore.GetTotalThrust(f.Vessel) / f.Vessel.GetTotalMass())
+                    * TimeWarp.deltaTime;
             }
             else
             {
@@ -68,12 +82,17 @@ namespace RemoteTech.FlightComputer.Commands
         /// <returns>max burn time</returns>
         public double getMaxBurnTime(FlightComputer f)
         {
-            if (Duration > 0) return Duration;
+            if (Duration > 0)
+                return Duration;
 
-            return DeltaV / (Throttle * FlightCore.GetTotalThrust(f.Vessel) / f.Vessel.GetTotalMass());
+            return DeltaV
+                / (Throttle * FlightCore.GetTotalThrust(f.Vessel) / f.Vessel.GetTotalMass());
         }
 
-        public override void Abort() { mAbort = true; }
+        public override void Abort()
+        {
+            mAbort = true;
+        }
 
         public static BurnCommand Off()
         {
@@ -127,11 +146,16 @@ namespace RemoteTech.FlightComputer.Commands
                 kaCAddonLabel += RTUtil.FormatDuration(this.Duration);
             else
                 kaCAddonLabel += this.DeltaV;
-                
+
             // create the alarm
             if (RTCore.Instance != null && RTCore.Instance.KacAddon != null)
             {
-                KaCItemId = RTCore.Instance.KacAddon.CreateAlarm(RemoteTech_KACWrapper.KACWrapper.KACAPI.AlarmTypeEnum.Raw, kaCAddonLabel, timetoexec, computer.Vessel.id);
+                KaCItemId = RTCore.Instance.KacAddon.CreateAlarm(
+                    RemoteTech_KACWrapper.KACWrapper.KACAPI.AlarmTypeEnum.Raw,
+                    kaCAddonLabel,
+                    timetoexec,
+                    computer.Vessel.id
+                );
             }
         }
 
@@ -141,7 +165,11 @@ namespace RemoteTech.FlightComputer.Commands
         /// <param name="computer">Current flight computer</param>
         public override void CommandCanceled(FlightComputer computer)
         {
-            if (KaCItemId == string.Empty || RTCore.Instance == null || RTCore.Instance.KacAddon == null)
+            if (
+                KaCItemId == string.Empty
+                || RTCore.Instance == null
+                || RTCore.Instance.KacAddon == null
+            )
                 return;
 
             // Cancel also the kac entry

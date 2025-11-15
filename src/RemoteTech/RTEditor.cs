@@ -1,8 +1,8 @@
-﻿using RemoteTech.Modules;
-using RemoteTech.UI;
-using System;
-using UnityEngine;
+﻿using System;
 using KSP.UI.Screens;
+using RemoteTech.Modules;
+using RemoteTech.UI;
+using UnityEngine;
 
 namespace RemoteTech
 {

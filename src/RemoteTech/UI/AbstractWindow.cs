@@ -27,14 +27,19 @@ namespace RemoteTech.UI
         private double mLastTime;
         private double mTooltipTimer;
         private readonly Guid mGuid;
-        public static Dictionary<Guid, AbstractWindow> Windows = new Dictionary<Guid, AbstractWindow>();
+        public static Dictionary<Guid, AbstractWindow> Windows =
+            new Dictionary<Guid, AbstractWindow>();
+
         /// <summary>The initial width of this window</summary>
         public float mInitialWidth;
+
         /// <summary>The initial height of this window</summary>
         public float mInitialHeight;
+
         /// <summary>Callback trigger for the change in the posistion</summary>
         public Action onPositionChanged = delegate { };
         public Rect backupPosition;
+
         /// <summary>todo</summary>
         protected bool mCloseButton = true;
 
@@ -57,14 +62,17 @@ namespace RemoteTech.UI
             GameEvents.onShowUI.Add(OnShowUI);
         }
 
-        public Rect RequestPosition() { return Position; }
+        public Rect RequestPosition()
+        {
+            return Position;
+        }
 
         public virtual void Show()
         {
             if (Enabled)
                 return;
 
-            if(mSavePosition)
+            if (mSavePosition)
             {
                 onPositionChanged += storePosition;
 
@@ -114,10 +122,15 @@ namespace RemoteTech.UI
             InputLockManager.RemoveControlLock("RTUserLockAbstractWindow");
             if (this.backupPosition.ContainsMouse())
             {
-                InputLockManager.SetControlLock(ControlTypes.CAMERACONTROLS | // block scrolling through
-                                                ControlTypes.MAP | // block user's clicks on ship/planet/orbit elements
-                                                ControlTypes.ALL_SHIP_CONTROLS // block user's actions on vessel like keypress Z, X or T
-                                                , "RTUserLockAbstractWindow");
+                InputLockManager.SetControlLock(
+                    ControlTypes.CAMERACONTROLS
+                        | // block scrolling through
+                        ControlTypes.MAP
+                        | // block user's clicks on ship/planet/orbit elements
+                        ControlTypes.ALL_SHIP_CONTROLS // block user's actions on vessel like keypress Z, X or T
+                    ,
+                    "RTUserLockAbstractWindow"
+                );
             }
 
             Window(uid);
@@ -134,18 +147,30 @@ namespace RemoteTech.UI
 
         public virtual void Draw()
         {
-            if (!Enabled) return;
+            if (!Enabled)
+                return;
             if (Event.current.type == EventType.Layout)
             {
                 Position.width = 0;
                 Position.height = 0;
             }
 
-            Position = GUILayout.Window(mGuid.GetHashCode(), Position, WindowPre, Title, Title == null ? Frame : HighLogic.Skin.window);
-            
+            Position = GUILayout.Window(
+                mGuid.GetHashCode(),
+                Position,
+                WindowPre,
+                Title,
+                Title == null ? Frame : HighLogic.Skin.window
+            );
+
             if (Title != null && this.mCloseButton)
             {
-                if (GUI.Button(new Rect(Position.x + Position.width - 18, Position.y + 2, 16, 16), ""))
+                if (
+                    GUI.Button(
+                        new Rect(Position.x + Position.width - 18, Position.y + 2, 16, 16),
+                        ""
+                    )
+                )
                 {
                     Hide();
                 }
@@ -178,7 +203,10 @@ namespace RemoteTech.UI
                         var pop = GUI.skin.box.alignment;
                         var width = GUI.skin.box.CalcSize(new GUIContent(Tooltip)).x;
                         GUI.skin.box.alignment = TextAnchor.MiddleLeft;
-                        GUI.Box(new Rect(Position.x, Position.y + Position.height + 10, width, 28), Tooltip);
+                        GUI.Box(
+                            new Rect(Position.x, Position.y + Position.height + 10, width, 28),
+                            Tooltip
+                        );
                         GUI.skin.box.alignment = pop;
                     }
                     else

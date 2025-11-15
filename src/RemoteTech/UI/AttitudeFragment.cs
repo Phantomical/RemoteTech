@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections;
+using KSP.Localization;
+using RemoteTech.FlightComputer;
 using RemoteTech.FlightComputer.Commands;
 using UnityEngine;
-using KSP.Localization;
 using static RemoteTech.FlightComputer.SteeringHelper;
-using RemoteTech.FlightComputer;
 
 namespace RemoteTech.UI
 {
@@ -17,7 +17,7 @@ namespace RemoteTech.UI
         Orbital,
         Surface,
         TargetVel,
-        Custom
+        Custom,
     }
 
     public class AttitudeFragment : IFragment
@@ -128,83 +128,353 @@ namespace RemoteTech.UI
             {
                 GUILayout.BeginHorizontal();
                 {
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_KILL") , Localizer.Format("#RT_AttitudeFragment_KILL_desc")), () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Kill)), (int)mMode, (int)ComputerMode.Kill, GUILayout.Width(width3));//"KILL", "Kill rotation."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_NODE"), Localizer.Format("#RT_AttitudeFragment_NODE_desc")), () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Node)), (int)mMode, (int)ComputerMode.Node, GUILayout.Width(width3));//"NODE", "Prograde points in the direction of the first maneuver node."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_RVEL"), Localizer.Format("#RT_AttitudeFragment_RVEL_desc")), () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.TargetVel)), (int)mMode, (int)ComputerMode.TargetVel, GUILayout.Width(width3));//"RVEL", "Prograde relative to target velocity."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_KILL"),
+                            Localizer.Format("#RT_AttitudeFragment_KILL_desc")
+                        ),
+                        () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Kill)),
+                        (int)mMode,
+                        (int)ComputerMode.Kill,
+                        GUILayout.Width(width3)
+                    ); //"KILL", "Kill rotation."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_NODE"),
+                            Localizer.Format("#RT_AttitudeFragment_NODE_desc")
+                        ),
+                        () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Node)),
+                        (int)mMode,
+                        (int)ComputerMode.Node,
+                        GUILayout.Width(width3)
+                    ); //"NODE", "Prograde points in the direction of the first maneuver node."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_RVEL"),
+                            Localizer.Format("#RT_AttitudeFragment_RVEL_desc")
+                        ),
+                        () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.TargetVel)),
+                        (int)mMode,
+                        (int)ComputerMode.TargetVel,
+                        GUILayout.Width(width3)
+                    ); //"RVEL", "Prograde relative to target velocity."
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_ORB"), Localizer.Format("#RT_AttitudeFragment_ORB_desc")), () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Orbital)), (int)mMode, (int)ComputerMode.Orbital, GUILayout.Width(width3));//"ORB", "Prograde relative to orbital velocity."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_SRF"), Localizer.Format("#RT_AttitudeFragment_SRF_desc")), () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Surface)), (int)mMode, (int)ComputerMode.Surface, GUILayout.Width(width3));//"SRF", "Prograde relative to surface velocity."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_TGT"), Localizer.Format("#RT_AttitudeFragment_TGT_desc")), () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.TargetPos)), (int)mMode, (int)ComputerMode.TargetPos, GUILayout.Width(width3));//"TGT", "Prograde points directly at target."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_ORB"),
+                            Localizer.Format("#RT_AttitudeFragment_ORB_desc")
+                        ),
+                        () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Orbital)),
+                        (int)mMode,
+                        (int)ComputerMode.Orbital,
+                        GUILayout.Width(width3)
+                    ); //"ORB", "Prograde relative to orbital velocity."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_SRF"),
+                            Localizer.Format("#RT_AttitudeFragment_SRF_desc")
+                        ),
+                        () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Surface)),
+                        (int)mMode,
+                        (int)ComputerMode.Surface,
+                        GUILayout.Width(width3)
+                    ); //"SRF", "Prograde relative to surface velocity."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_TGT"),
+                            Localizer.Format("#RT_AttitudeFragment_TGT_desc")
+                        ),
+                        () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.TargetPos)),
+                        (int)mMode,
+                        (int)ComputerMode.TargetPos,
+                        GUILayout.Width(width3)
+                    ); //"TGT", "Prograde points directly at target."
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 {
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_OFF"), Localizer.Format("#RT_AttitudeFragment_OFF_desc")), () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Off)), (int)mMode, (int)ComputerMode.Off, GUILayout.Width(width3));//"OFF", "Set Attitude to Off."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_CUSTOM"), Localizer.Format("#RT_AttitudeFragment_CUSTOM_desc")), () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Custom)), (int)mMode, (int)ComputerMode.Custom, GUILayout.ExpandWidth(true));//"CUSTOM", "Prograde fixed as pitch, heading, roll relative to north pole."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_OFF"),
+                            Localizer.Format("#RT_AttitudeFragment_OFF_desc")
+                        ),
+                        () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Off)),
+                        (int)mMode,
+                        (int)ComputerMode.Off,
+                        GUILayout.Width(width3)
+                    ); //"OFF", "Set Attitude to Off."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_CUSTOM"),
+                            Localizer.Format("#RT_AttitudeFragment_CUSTOM_desc")
+                        ),
+                        () => RTCore.Instance.StartCoroutine(OnModeClick(ComputerMode.Custom)),
+                        (int)mMode,
+                        (int)ComputerMode.Custom,
+                        GUILayout.ExpandWidth(true)
+                    ); //"CUSTOM", "Prograde fixed as pitch, heading, roll relative to north pole."
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.Space(5);
 
                 GUILayout.BeginHorizontal();
                 {
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_Prograde"), Localizer.Format("#RT_AttitudeFragment_Prograde_desc")), () => RTCore.Instance.StartCoroutine(OnAttitudeClick(FlightAttitude.Prograde)), (int)mAttitude, (int)FlightAttitude.Prograde, GUILayout.Width(width3));//"GRD\n+", "Orient to Prograde."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_RadialPlus"), Localizer.Format("#RT_AttitudeFragment_RadialPlus_desc")), () => RTCore.Instance.StartCoroutine(OnAttitudeClick(FlightAttitude.RadialPlus)), (int)mAttitude, (int)FlightAttitude.RadialPlus, GUILayout.Width(width3));//"RAD\n+", "Orient to Radial."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_NormalPlus"), Localizer.Format("#RT_AttitudeFragment_NormalPlus_desc")), () => RTCore.Instance.StartCoroutine(OnAttitudeClick(FlightAttitude.NormalPlus)), (int)mAttitude, (int)FlightAttitude.NormalPlus, GUILayout.Width(width3));//"NRM\n+", "Orient to Normal."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_Prograde"),
+                            Localizer.Format("#RT_AttitudeFragment_Prograde_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnAttitudeClick(FlightAttitude.Prograde)
+                            ),
+                        (int)mAttitude,
+                        (int)FlightAttitude.Prograde,
+                        GUILayout.Width(width3)
+                    ); //"GRD\n+", "Orient to Prograde."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_RadialPlus"),
+                            Localizer.Format("#RT_AttitudeFragment_RadialPlus_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnAttitudeClick(FlightAttitude.RadialPlus)
+                            ),
+                        (int)mAttitude,
+                        (int)FlightAttitude.RadialPlus,
+                        GUILayout.Width(width3)
+                    ); //"RAD\n+", "Orient to Radial."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_NormalPlus"),
+                            Localizer.Format("#RT_AttitudeFragment_NormalPlus_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnAttitudeClick(FlightAttitude.NormalPlus)
+                            ),
+                        (int)mAttitude,
+                        (int)FlightAttitude.NormalPlus,
+                        GUILayout.Width(width3)
+                    ); //"NRM\n+", "Orient to Normal."
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 {
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_Retrograde"), Localizer.Format("#RT_AttitudeFragment_Retrograde_desc")), () => RTCore.Instance.StartCoroutine(OnAttitudeClick(FlightAttitude.Retrograde)), (int)mAttitude, (int)FlightAttitude.Retrograde, GUILayout.Width(width3));//"GRD\n-", "Orient to Retrograde."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_RadialMinus"), Localizer.Format("#RT_AttitudeFragment_RadialMinus_desc")), () => RTCore.Instance.StartCoroutine(OnAttitudeClick(FlightAttitude.RadialMinus)), (int)mAttitude, (int)FlightAttitude.RadialMinus, GUILayout.Width(width3));//"RAD\n-", "Orient to Anti-radial."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_NormalMinus"), Localizer.Format("#RT_AttitudeFragment_NormalMinus_desc")), () => RTCore.Instance.StartCoroutine(OnAttitudeClick(FlightAttitude.NormalMinus)), (int)mAttitude, (int)FlightAttitude.NormalMinus, GUILayout.Width(width3));//"NRM\n-", "Orient to Anti-normal."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_Retrograde"),
+                            Localizer.Format("#RT_AttitudeFragment_Retrograde_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnAttitudeClick(FlightAttitude.Retrograde)
+                            ),
+                        (int)mAttitude,
+                        (int)FlightAttitude.Retrograde,
+                        GUILayout.Width(width3)
+                    ); //"GRD\n-", "Orient to Retrograde."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_RadialMinus"),
+                            Localizer.Format("#RT_AttitudeFragment_RadialMinus_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnAttitudeClick(FlightAttitude.RadialMinus)
+                            ),
+                        (int)mAttitude,
+                        (int)FlightAttitude.RadialMinus,
+                        GUILayout.Width(width3)
+                    ); //"RAD\n-", "Orient to Anti-radial."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_NormalMinus"),
+                            Localizer.Format("#RT_AttitudeFragment_NormalMinus_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnAttitudeClick(FlightAttitude.NormalMinus)
+                            ),
+                        (int)mAttitude,
+                        (int)FlightAttitude.NormalMinus,
+                        GUILayout.Width(width3)
+                    ); //"NRM\n-", "Orient to Anti-normal."
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.Space(5);
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_AttitudeFragment_PIT"),Localizer.Format("#RT_AttitudeFragment_PIT_desc")), GUILayout.Width(width3));//"PIT:", "Sets pitch."
-                    RTUtil.RepeatButton("+", () => { Pitch++; });
-                    RTUtil.RepeatButton("-", () => { Pitch--; });
-                    RTUtil.MouseWheelTriggerField(ref mPitch, "rt_phr1", () => { Pitch++; }, () => { Pitch--; }, GUILayout.Width(width3));
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_PIT"),
+                            Localizer.Format("#RT_AttitudeFragment_PIT_desc")
+                        ),
+                        GUILayout.Width(width3)
+                    ); //"PIT:", "Sets pitch."
+                    RTUtil.RepeatButton(
+                        "+",
+                        () =>
+                        {
+                            Pitch++;
+                        }
+                    );
+                    RTUtil.RepeatButton(
+                        "-",
+                        () =>
+                        {
+                            Pitch--;
+                        }
+                    );
+                    RTUtil.MouseWheelTriggerField(
+                        ref mPitch,
+                        "rt_phr1",
+                        () =>
+                        {
+                            Pitch++;
+                        },
+                        () =>
+                        {
+                            Pitch--;
+                        },
+                        GUILayout.Width(width3)
+                    );
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_AttitudeFragment_HDG"), Localizer.Format("#RT_AttitudeFragment_HDG_desc")), GUILayout.Width(width3));//"HDG:", "Sets heading."
-                    RTUtil.RepeatButton("+", () => { Heading++; });
-                    RTUtil.RepeatButton("-", () => { Heading--; });
-                    RTUtil.MouseWheelTriggerField(ref mHeading, "rt_phr2", () => { Heading++; }, () => { Heading--; }, GUILayout.Width(width3));
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_HDG"),
+                            Localizer.Format("#RT_AttitudeFragment_HDG_desc")
+                        ),
+                        GUILayout.Width(width3)
+                    ); //"HDG:", "Sets heading."
+                    RTUtil.RepeatButton(
+                        "+",
+                        () =>
+                        {
+                            Heading++;
+                        }
+                    );
+                    RTUtil.RepeatButton(
+                        "-",
+                        () =>
+                        {
+                            Heading--;
+                        }
+                    );
+                    RTUtil.MouseWheelTriggerField(
+                        ref mHeading,
+                        "rt_phr2",
+                        () =>
+                        {
+                            Heading++;
+                        },
+                        () =>
+                        {
+                            Heading--;
+                        },
+                        GUILayout.Width(width3)
+                    );
                 }
                 GUILayout.EndHorizontal();
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(new GUIContent(Localizer.Format("#RT_AttitudeFragment_RLL"), Localizer.Format("#RT_AttitudeFragment_RLL_desc")), GUILayout.Width(width3));//"RLL:", "Sets roll."
-                    RTUtil.RepeatButton("+", () => { Roll++; });
-                    RTUtil.RepeatButton("-", () => { Roll--; });
-                    RTUtil.MouseWheelTriggerField(ref mRoll, "rt_phr3", () => { Roll++; }, () => { Roll--; }, GUILayout.Width(width3));
+                    GUILayout.Label(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_RLL"),
+                            Localizer.Format("#RT_AttitudeFragment_RLL_desc")
+                        ),
+                        GUILayout.Width(width3)
+                    ); //"RLL:", "Sets roll."
+                    RTUtil.RepeatButton(
+                        "+",
+                        () =>
+                        {
+                            Roll++;
+                        }
+                    );
+                    RTUtil.RepeatButton(
+                        "-",
+                        () =>
+                        {
+                            Roll--;
+                        }
+                    );
+                    RTUtil.MouseWheelTriggerField(
+                        ref mRoll,
+                        "rt_phr3",
+                        () =>
+                        {
+                            Roll++;
+                        },
+                        () =>
+                        {
+                            Roll--;
+                        },
+                        GUILayout.Width(width3)
+                    );
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.Space(5);
 
                 GUILayout.BeginHorizontal();
                 {
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_IgnorePit"), Localizer.Format("#RT_AttitudeFragment_IgnorePit_desc")), () => RTCore.Instance.StartCoroutine(OnControlClick(FlightControlOutput.IgnorePitch)), (int)(mControlOutputMask & FlightControlOutput.IgnorePitch), (int)FlightControlOutput.IgnorePitch, GUILayout.Width(width3));//"IGN\nPIT", "Ignore pitch control."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_IgnoreHdr"), Localizer.Format("#RT_AttitudeFragment_IgnoreHdr_desc")), () => RTCore.Instance.StartCoroutine(OnControlClick(FlightControlOutput.IgnoreHeading)), (int)(mControlOutputMask & FlightControlOutput.IgnoreHeading), (int)FlightControlOutput.IgnoreHeading, GUILayout.Width(width3));//"IGN\nHDR", "Ignore heading control."
-                    RTUtil.FakeStateButton(new GUIContent(Localizer.Format("#RT_AttitudeFragment_IgnoreRll"), Localizer.Format("#RT_AttitudeFragment_IgnoreRll_desc")), () => RTCore.Instance.StartCoroutine(OnControlClick(FlightControlOutput.IgnoreRoll)), (int)(mControlOutputMask & FlightControlOutput.IgnoreRoll), (int)FlightControlOutput.IgnoreRoll, GUILayout.Width(width3));//"IGN\nRLL", "Ignore roll control."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_IgnorePit"),
+                            Localizer.Format("#RT_AttitudeFragment_IgnorePit_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnControlClick(FlightControlOutput.IgnorePitch)
+                            ),
+                        (int)(mControlOutputMask & FlightControlOutput.IgnorePitch),
+                        (int)FlightControlOutput.IgnorePitch,
+                        GUILayout.Width(width3)
+                    ); //"IGN\nPIT", "Ignore pitch control."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_IgnoreHdr"),
+                            Localizer.Format("#RT_AttitudeFragment_IgnoreHdr_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnControlClick(FlightControlOutput.IgnoreHeading)
+                            ),
+                        (int)(mControlOutputMask & FlightControlOutput.IgnoreHeading),
+                        (int)FlightControlOutput.IgnoreHeading,
+                        GUILayout.Width(width3)
+                    ); //"IGN\nHDR", "Ignore heading control."
+                    RTUtil.FakeStateButton(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_IgnoreRll"),
+                            Localizer.Format("#RT_AttitudeFragment_IgnoreRll_desc")
+                        ),
+                        () =>
+                            RTCore.Instance.StartCoroutine(
+                                OnControlClick(FlightControlOutput.IgnoreRoll)
+                            ),
+                        (int)(mControlOutputMask & FlightControlOutput.IgnoreRoll),
+                        (int)FlightControlOutput.IgnoreRoll,
+                        GUILayout.Width(width3)
+                    ); //"IGN\nRLL", "Ignore roll control."
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.Space(5);
 
                 GUILayout.BeginHorizontal();
                 {
-                    GUILayout.Label(Localizer.Format("#RT_AttitudeFragment_Throttle"));//"Throttle: "
+                    GUILayout.Label(Localizer.Format("#RT_AttitudeFragment_Throttle")); //"Throttle: "
                     GUILayout.FlexibleSpace();
                     GUILayout.Label(mThrottle.ToString("P"));
                 }
@@ -216,12 +486,27 @@ namespace RemoteTech.UI
 
                 GUILayout.BeginHorizontal();
                 {
-                    RTUtil.Button(new GUIContent(Localizer.Format("#RT_AttitudeFragment_BURN"), Localizer.Format("#RT_AttitudeFragment_BURN_desc")),//"BURN", "Example: 125, 125s, 5m20s, 1d6h20m10s, 123m/s."
-                        OnBurnClick, GUILayout.Width(width3));
-                    RTUtil.Button(new GUIContent(Localizer.Format("#RT_AttitudeFragment_EXEC"), Localizer.Format("#RT_AttitudeFragment_EXEC_desc")),//"EXEC", "Executes next and subsequent maneuver nodes."
-                        OnExecClick, GUILayout.Width(width3));
-                    RTUtil.Button(new GUIContent(">>", Localizer.Format("#RT_AttitudeFragment_Queue_desc")),//"Toggles the queue and delay functionality."
-                        mOnClickQueue, GUILayout.Width(width3));
+                    RTUtil.Button(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_BURN"),
+                            Localizer.Format("#RT_AttitudeFragment_BURN_desc")
+                        ), //"BURN", "Example: 125, 125s, 5m20s, 1d6h20m10s, 123m/s."
+                        OnBurnClick,
+                        GUILayout.Width(width3)
+                    );
+                    RTUtil.Button(
+                        new GUIContent(
+                            Localizer.Format("#RT_AttitudeFragment_EXEC"),
+                            Localizer.Format("#RT_AttitudeFragment_EXEC_desc")
+                        ), //"EXEC", "Executes next and subsequent maneuver nodes."
+                        OnExecClick,
+                        GUILayout.Width(width3)
+                    );
+                    RTUtil.Button(
+                        new GUIContent(">>", Localizer.Format("#RT_AttitudeFragment_Queue_desc")), //"Toggles the queue and delay functionality."
+                        mOnClickQueue,
+                        GUILayout.Width(width3)
+                    );
                 }
                 GUILayout.EndHorizontal();
             }
@@ -246,7 +531,11 @@ namespace RemoteTech.UI
             if (mFlightComputer.InputAllowed)
             {
                 mAttitude = (state < 0) ? FlightAttitude.Null : state;
-                if (mMode == ComputerMode.Off || mMode == ComputerMode.Kill || mMode == ComputerMode.Node)
+                if (
+                    mMode == ComputerMode.Off
+                    || mMode == ComputerMode.Kill
+                    || mMode == ComputerMode.Node
+                )
                 {
                     mMode = ComputerMode.Orbital;
                 }
@@ -259,33 +548,48 @@ namespace RemoteTech.UI
             yield return null;
             if (mFlightComputer.InputAllowed)
             {
-                switch(output)
+                switch (output)
                 {
                     case FlightControlOutput.IgnorePitch:
-                        if ((mControlOutputMask & FlightControlOutput.IgnorePitch) == FlightControlOutput.IgnorePitch)
+                        if (
+                            (mControlOutputMask & FlightControlOutput.IgnorePitch)
+                            == FlightControlOutput.IgnorePitch
+                        )
                             mControlOutputMask &= ~FlightControlOutput.IgnorePitch;
                         else
                             mControlOutputMask |= FlightControlOutput.IgnorePitch;
                         break;
 
                     case FlightControlOutput.IgnoreHeading:
-                        if ((mControlOutputMask & FlightControlOutput.IgnoreHeading) == FlightControlOutput.IgnoreHeading)
+                        if (
+                            (mControlOutputMask & FlightControlOutput.IgnoreHeading)
+                            == FlightControlOutput.IgnoreHeading
+                        )
                             mControlOutputMask &= ~FlightControlOutput.IgnoreHeading;
                         else
                             mControlOutputMask |= FlightControlOutput.IgnoreHeading;
                         break;
 
                     case FlightControlOutput.IgnoreRoll:
-                        if ((mControlOutputMask & FlightControlOutput.IgnoreRoll) == FlightControlOutput.IgnoreRoll)
+                        if (
+                            (mControlOutputMask & FlightControlOutput.IgnoreRoll)
+                            == FlightControlOutput.IgnoreRoll
+                        )
                             mControlOutputMask &= ~FlightControlOutput.IgnoreRoll;
                         else
                             mControlOutputMask |= FlightControlOutput.IgnoreRoll;
                         break;
                 }
 
-                bool pitch = (mControlOutputMask & FlightControlOutput.IgnorePitch) == FlightControlOutput.IgnorePitch,
-                     heading = (mControlOutputMask & FlightControlOutput.IgnoreHeading) == FlightControlOutput.IgnoreHeading,
-                     roll = (mControlOutputMask & FlightControlOutput.IgnoreRoll) == FlightControlOutput.IgnoreRoll;
+                bool pitch =
+                        (mControlOutputMask & FlightControlOutput.IgnorePitch)
+                        == FlightControlOutput.IgnorePitch,
+                    heading =
+                        (mControlOutputMask & FlightControlOutput.IgnoreHeading)
+                        == FlightControlOutput.IgnoreHeading,
+                    roll =
+                        (mControlOutputMask & FlightControlOutput.IgnoreRoll)
+                        == FlightControlOutput.IgnoreRoll;
 
                 mFlightComputer.Enqueue(FlightControlCommand.WithPHR(pitch, heading, roll));
             }
@@ -296,7 +600,7 @@ namespace RemoteTech.UI
             ICommand newCommand;
             switch (mMode)
             {
-                default: 
+                default:
                 case ComputerMode.Off:
                     mAttitude = FlightAttitude.Null;
                     newCommand = AttitudeCommand.Off();
@@ -310,24 +614,30 @@ namespace RemoteTech.UI
                     newCommand = AttitudeCommand.ManeuverNode();
                     break;
                 case ComputerMode.TargetPos:
-                    mAttitude = (mAttitude == FlightAttitude.Null) ? FlightAttitude.Prograde : mAttitude;
-                    newCommand =
-                        AttitudeCommand.WithAttitude(mAttitude, ReferenceFrame.TargetParallel);
+                    mAttitude =
+                        (mAttitude == FlightAttitude.Null) ? FlightAttitude.Prograde : mAttitude;
+                    newCommand = AttitudeCommand.WithAttitude(
+                        mAttitude,
+                        ReferenceFrame.TargetParallel
+                    );
                     break;
                 case ComputerMode.Orbital:
-                    mAttitude = (mAttitude == FlightAttitude.Null) ? FlightAttitude.Prograde : mAttitude;
-                    newCommand =
-                        AttitudeCommand.WithAttitude(mAttitude, ReferenceFrame.Orbit);
+                    mAttitude =
+                        (mAttitude == FlightAttitude.Null) ? FlightAttitude.Prograde : mAttitude;
+                    newCommand = AttitudeCommand.WithAttitude(mAttitude, ReferenceFrame.Orbit);
                     break;
                 case ComputerMode.Surface:
-                    mAttitude = (mAttitude == FlightAttitude.Null) ? FlightAttitude.Prograde : mAttitude;
-                    newCommand =
-                        AttitudeCommand.WithAttitude(mAttitude, ReferenceFrame.Surface);
+                    mAttitude =
+                        (mAttitude == FlightAttitude.Null) ? FlightAttitude.Prograde : mAttitude;
+                    newCommand = AttitudeCommand.WithAttitude(mAttitude, ReferenceFrame.Surface);
                     break;
                 case ComputerMode.TargetVel:
-                    mAttitude = (mAttitude == FlightAttitude.Null) ? FlightAttitude.Prograde : mAttitude;
-                    newCommand =
-                        AttitudeCommand.WithAttitude(mAttitude, ReferenceFrame.TargetVelocity);
+                    mAttitude =
+                        (mAttitude == FlightAttitude.Null) ? FlightAttitude.Prograde : mAttitude;
+                    newCommand = AttitudeCommand.WithAttitude(
+                        mAttitude,
+                        ReferenceFrame.TargetVelocity
+                    );
                     break;
                 case ComputerMode.Custom:
                     mAttitude = FlightAttitude.Null;
@@ -351,23 +661,33 @@ namespace RemoteTech.UI
 
         private void OnExecClick()
         {
-            if (mFlightComputer.Vessel.patchedConicSolver == null || mFlightComputer.Vessel.patchedConicSolver.maneuverNodes.Count == 0) return;
+            if (
+                mFlightComputer.Vessel.patchedConicSolver == null
+                || mFlightComputer.Vessel.patchedConicSolver.maneuverNodes.Count == 0
+            )
+                return;
             var cmd = ManeuverCommand.WithNode(0, mFlightComputer);
             if (cmd.TimeStamp < RTUtil.GameTime + mFlightComputer.Delay)
             {
-                RTUtil.ScreenMessage(Localizer.Format("#RT_FC_msg5"));//"[Flight Computer]: Signal delay is too high to execute this maneuver at the proper time."
+                RTUtil.ScreenMessage(Localizer.Format("#RT_FC_msg5")); //"[Flight Computer]: Signal delay is too high to execute this maneuver at the proper time."
             }
             else
             {
                 mFlightComputer.Enqueue(cmd, false, false, true);
 
                 //check for subsequent nodes
-                int numSubsequentNodes = mFlightComputer.Vessel.patchedConicSolver.maneuverNodes.Count - 1;
+                int numSubsequentNodes =
+                    mFlightComputer.Vessel.patchedConicSolver.maneuverNodes.Count - 1;
                 if (numSubsequentNodes >= 1)
                 {
                     for (int nodeIndex = 1; nodeIndex <= numSubsequentNodes; nodeIndex++)
                     {
-                        mFlightComputer.Enqueue(ManeuverCommand.WithNode(nodeIndex, mFlightComputer), false, false, true);
+                        mFlightComputer.Enqueue(
+                            ManeuverCommand.WithNode(nodeIndex, mFlightComputer),
+                            false,
+                            false,
+                            true
+                        );
                     }
                 }
             }
@@ -386,20 +706,35 @@ namespace RemoteTech.UI
             }
 
             // get active command
-            SimpleTypes.ComputerModeMapper mappedCommand = mFlightComputer.CurrentFlightMode.mapFlightMode();
+            SimpleTypes.ComputerModeMapper mappedCommand =
+                mFlightComputer.CurrentFlightMode.mapFlightMode();
             mMode = mappedCommand.computerMode;
             mAttitude = FlightAttitude.Null;
 
-            if(mMode == ComputerMode.Orbital || mMode == ComputerMode.Surface || mMode == ComputerMode.TargetPos || mMode == ComputerMode.TargetVel)
+            if (
+                mMode == ComputerMode.Orbital
+                || mMode == ComputerMode.Surface
+                || mMode == ComputerMode.TargetPos
+                || mMode == ComputerMode.TargetVel
+            )
                 mAttitude = mappedCommand.computerAttitude;
 
             var activeIgnoreCmd = FlightControlCommand.findActiveControlCmd(mFlightComputer);
             if (activeIgnoreCmd != null)
             {
                 mControlOutputMask = 0;
-                if (activeIgnoreCmd.ignorePitchOutput) { mControlOutputMask |= FlightControlOutput.IgnorePitch; }
-                if (activeIgnoreCmd.ignoreHeadingOutput) { mControlOutputMask |= FlightControlOutput.IgnoreHeading; }
-                if (activeIgnoreCmd.ignoreRollOutput) { mControlOutputMask |= FlightControlOutput.IgnoreRoll; }
+                if (activeIgnoreCmd.ignorePitchOutput)
+                {
+                    mControlOutputMask |= FlightControlOutput.IgnorePitch;
+                }
+                if (activeIgnoreCmd.ignoreHeadingOutput)
+                {
+                    mControlOutputMask |= FlightControlOutput.IgnoreHeading;
+                }
+                if (activeIgnoreCmd.ignoreRollOutput)
+                {
+                    mControlOutputMask |= FlightControlOutput.IgnoreRoll;
+                }
             }
         }
 

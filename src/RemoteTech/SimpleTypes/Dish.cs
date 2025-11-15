@@ -17,12 +17,18 @@ namespace RemoteTech.SimpleTypes
 
         public override String ToString()
         {
-            return String.Format("Dish(Range: {0}, Radians: {1}, Target: {2}", 
-                Range.ToString("F2"), 
+            return String.Format(
+                "Dish(Range: {0}, Radians: {1}, Target: {2}",
+                Range.ToString("F2"),
                 (Radians / Math.PI * 180).ToString("F2") + "deg",
-                String.Format("{0} ({1})", Target, RTCore.Instance.Satellites[Target] != null 
-                    ? RTCore.Instance.Satellites[Target].ToString() 
-                    : "Unknown"));
+                String.Format(
+                    "{0} ({1})",
+                    Target,
+                    RTCore.Instance.Satellites[Target] != null
+                        ? RTCore.Instance.Satellites[Target].ToString()
+                        : "Unknown"
+                )
+            );
         }
     }
 }

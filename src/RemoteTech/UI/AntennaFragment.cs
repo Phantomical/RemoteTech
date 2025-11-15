@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using KSP.Localization;
+using UnityEngine;
 
 namespace RemoteTech.UI
 {
@@ -23,30 +23,50 @@ namespace RemoteTech.UI
             }
         }
 
-        public IAntenna Antenna { 
+        public IAntenna Antenna
+        {
             get { return mAntenna; }
-            set { if (mAntenna != value) { mAntenna = value; RefreshPlanets(); Refresh(); } }
+            set
+            {
+                if (mAntenna != value)
+                {
+                    mAntenna = value;
+                    RefreshPlanets();
+                    Refresh();
+                }
+            }
         }
         private IAntenna mAntenna;
         private Vector2 mScrollPosition = Vector2.zero;
+
         /// <summary>The tree of (real or virtual) targets displayed in this fragment.</summary>
         /// <invariant>No Entry object appears in the tree pointed to by mRootEntry more than once.</invariant>
         private Entry mRootEntry = new Entry();
+
         /// <summary>The Entry corresponding to the currently selected target, if any.</summary>
         private Entry mSelection;
+
         /// <summary>The Entry corresponding to the currently selected target, if any.</summary>
         private Entry mCurrentMouseOverEntry = null;
+
         /// <summary>Callback trigger for mouse over a list entry</summary>
         public Action onMouseOverListEntry = delegate { };
+
         /// <summary>Callback trigger for mouse out of a list entry</summary>
         public Action onMouseOutListEntry = delegate { };
+
         /// <summary>Current entry of the mouse</summary>
-        public Entry mouseOverEntry { get { return mCurrentMouseOverEntry; } private set { mCurrentMouseOverEntry = value; } }
+        public Entry mouseOverEntry
+        {
+            get { return mCurrentMouseOverEntry; }
+            private set { mCurrentMouseOverEntry = value; }
+        }
+
         /// <summary>Flag to trigger the onMouseover event</summary>
         public bool triggerMouseOverListEntry = false;
 
         /// <summary>The Entries corresponding to loaded celestial bodies.</summary>
-        private Dictionary<CelestialBody, Entry> mEntries;      // Current planet list
+        private Dictionary<CelestialBody, Entry> mEntries; // Current planet list
         private int refreshCounter = 0;
 
         public AntennaFragment(IAntenna antenna)
@@ -74,11 +94,12 @@ namespace RemoteTech.UI
         public void Draw()
         {
             // Allow update for non-triggering changes (e.g., changing map view filters or changing a vessel's type)
-            // This is the best way I could find to do periodic refreshes; 
-            //  RTCore.Instance.InvokeRepeating() would require a search for instances 
-            //  of AntennaFragment, and would keep running after all target windows 
+            // This is the best way I could find to do periodic refreshes;
+            //  RTCore.Instance.InvokeRepeating() would require a search for instances
+            //  of AntennaFragment, and would keep running after all target windows
             //  closed. Replace with something less clunky later! -- Starstrider42
-            if (++refreshCounter >= 100) {
+            if (++refreshCounter >= 100)
+            {
                 Refresh();
                 refreshCounter = 0;
             }
@@ -89,7 +110,8 @@ namespace RemoteTech.UI
             //Color pushCtColor = GUI.contentColor;
             //Color pushBgColor = GUI.backgroundColor;
             TextAnchor pushAlign = GUI.skin.button.alignment;
-            try {
+            try
+            {
                 GUI.skin.button.alignment = TextAnchor.MiddleLeft;
                 // Depth-first tree traversal.
                 Stack<Entry> dfs = new Stack<Entry>();
@@ -100,43 +122,57 @@ namespace RemoteTech.UI
 
                 // Set the inital mouseover to the selected entry
                 mouseOverEntry = mSelection;
-                
+
                 while (dfs.Count > 0)
                 {
                     Entry current = dfs.Pop();
                     GUI.backgroundColor = current.Color;
-                    
+
                     GUILayout.BeginHorizontal();
                     {
                         GUILayout.Space(current.Depth * (GUI.skin.button.margin.left + 24));
                         if (current.SubEntries.Count > 0)
                         {
-                            RTUtil.Button(current.Expanded ? " <" : " >",
+                            RTUtil.Button(
+                                current.Expanded ? " <" : " >",
                                 () =>
                                 {
                                     current.Expanded = !current.Expanded;
-                                }, GUILayout.Width(24));
+                                },
+                                GUILayout.Width(24)
+                            );
                         }
 
-                        RTUtil.StateButton(current.Text, mSelection == current ? 1 : 0, 1,
+                        RTUtil.StateButton(
+                            current.Text,
+                            mSelection == current ? 1 : 0,
+                            1,
                             (s) =>
                             {
                                 mSelection = current;
                                 Antenna.Target = mSelection.Guid;
-                            });
+                            }
+                        );
 
                         // Mouse is over the button
-                        if (GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition) && triggerMouseOverListEntry)
+                        if (
+                            GUILayoutUtility.GetLastRect().Contains(Event.current.mousePosition)
+                            && triggerMouseOverListEntry
+                        )
                         {
                             // reset current entry
                             mouseOverEntry = null;
-                            if (current.Text.ToLower() != Localizer.Format("#RT_ModuleUI_ActiveVessel_Tolower") && current.Text.ToLower() != Localizer.Format("#RT_ModuleUI_NoTarget_Tolower"))//"active vessel""no target"
+                            if (
+                                current.Text.ToLower()
+                                    != Localizer.Format("#RT_ModuleUI_ActiveVessel_Tolower")
+                                && current.Text.ToLower()
+                                    != Localizer.Format("#RT_ModuleUI_NoTarget_Tolower")
+                            ) //"active vessel""no target"
                             {
                                 mouseOverEntry = current;
                             }
                             onMouseOverListEntry.Invoke();
                         }
-
                     }
                     GUILayout.EndHorizontal();
 
@@ -148,36 +184,51 @@ namespace RemoteTech.UI
                         }
                     }
                 }
-
-            } finally {
+            }
+            finally
+            {
                 GUILayout.EndScrollView();
                 GUI.skin.button.alignment = pushAlign;
                 GUI.backgroundColor = pushColor;
             }
         }
 
-        public void Refresh(IAntenna sat) { if (sat == Antenna) { Antenna = null; } }
+        public void Refresh(IAntenna sat)
+        {
+            if (sat == Antenna)
+            {
+                Antenna = null;
+            }
+        }
+
         /// <summary>Rebuilds list of target vessels</summary>
-        /// <description>Rebuilds the list of target vessels, preserving the rest of the target list state. Does 
+        /// <description>Rebuilds the list of target vessels, preserving the rest of the target list state. Does
         ///     not alter planets or special targets, call RefreshPlanets() for that.</description>
         /// <param name="sat">The satellite whose status has just changed.</param>
-        public void Refresh(ISatellite sat) { Refresh(); }
+        public void Refresh(ISatellite sat)
+        {
+            Refresh();
+        }
+
         /// <summary>Rebuilds list of target vessels</summary>
-        /// <description>Rebuilds the list of target vessels, preserving the rest of the target list state. Does 
+        /// <description>Rebuilds the list of target vessels, preserving the rest of the target list state. Does
         ///     not alter planets or special targets, call RefreshPlanets() for that.</description>
         public void Refresh()
         {
             // Clear the satellites
             RemoveVessels(mRootEntry);
 
-            if (Antenna == null) return;
+            if (Antenna == null)
+                return;
 
             // Add the satellites
             foreach (ISatellite s in RTCore.Instance.Network)
             {
-                if (s.Guid == Antenna.Guid) continue;
+                if (s.Guid == Antenna.Guid)
+                    continue;
 
-                if (s.parentVessel != null && !MapViewFiltering.CheckAgainstFilter(s.parentVessel)) {
+                if (s.parentVessel != null && !MapViewFiltering.CheckAgainstFilter(s.parentVessel))
+                {
                     continue;
                 }
 
@@ -214,27 +265,29 @@ namespace RemoteTech.UI
         }
 
         /// <summary>Full refresh of target list</summary>
-        /// <description>Rebuilds the list of target buttons from scratch, including special targets and 
+        /// <description>Rebuilds the list of target buttons from scratch, including special targets and
         /// planets. Does not build vessel list, call Refresh() for that.</description>
         /// <remarks>Calling this function wipes all information about which submenus were open or closed.</remarks>
-        private void RefreshPlanets() {
+        private void RefreshPlanets()
+        {
             mEntries = new Dictionary<CelestialBody, Entry>();
 
             mRootEntry = new Entry();
             mSelection = new Entry()
             {
-                Text = Localizer.Format("#RT_ModuleUI_NoTarget"),//"No Target"
+                Text = Localizer.Format("#RT_ModuleUI_NoTarget"), //"No Target"
                 Guid = new Guid(RTSettings.Instance.NoTargetGuid),
                 Color = Color.white,
                 Depth = 0,
             };
             mRootEntry.SubEntries.Add(mSelection);
 
-            if (Antenna == null) return;
+            if (Antenna == null)
+                return;
 
             var activeVesselEntry = new Entry()
             {
-                Text = Localizer.Format("#RT_ModuleUI_ActiveVessel"),//"Active Vessel"
+                Text = Localizer.Format("#RT_ModuleUI_ActiveVessel"), //"Active Vessel"
                 Guid = NetworkManager.ActiveVesselGuid,
                 Color = Color.white,
                 Depth = 0,
@@ -256,7 +309,10 @@ namespace RemoteTech.UI
                 Entry current = mEntries[cb.Value];
                 current.Text = cb.Value.bodyName;
                 current.Guid = cb.Key;
-                current.Color = cb.Value.GetOrbitDriver() != null ? cb.Value.GetOrbitDriver().orbitColor : Color.yellow;
+                current.Color =
+                    cb.Value.GetOrbitDriver() != null
+                        ? cb.Value.GetOrbitDriver().orbitColor
+                        : Color.yellow;
                 current.Color.a = 1.0f;
 
                 if (cb.Value.referenceBody != cb.Value)
@@ -282,33 +338,47 @@ namespace RemoteTech.UI
             // Sort the lists based on semi-major axis. In reverse because of how we render it.
             foreach (var entryPair in mEntries)
             {
-                entryPair.Value.SubEntries.Sort((b, a) =>
+                entryPair.Value.SubEntries.Sort(
+                    (b, a) =>
                     {
-                        return RTCore.Instance.Network.Planets[a.Guid].orbit.semiMajorAxis.CompareTo(
-                            RTCore.Instance.Network.Planets[b.Guid].orbit.semiMajorAxis);
-                    });
+                        return RTCore
+                            .Instance.Network.Planets[a.Guid]
+                            .orbit.semiMajorAxis.CompareTo(
+                                RTCore.Instance.Network.Planets[b.Guid].orbit.semiMajorAxis
+                            );
+                    }
+                );
             }
             mRootEntry.SubEntries.Reverse();
         }
 
-        /// <summary>Removes all buttons representing specific vessels, while preserving celestial bodies 
+        /// <summary>Removes all buttons representing specific vessels, while preserving celestial bodies
         ///     and special targets</summary>
         /// <param name="root">The top of the tree from which to remove vessels.</param>
-        private void RemoveVessels(Entry root) {
+        private void RemoveVessels(Entry root)
+        {
             List<Entry> vesselList = new List<Entry>();
 
-            foreach (Entry subentry in root.SubEntries) {
+            foreach (Entry subentry in root.SubEntries)
+            {
                 // Is it a vessel?
-                if (subentry.Guid != Guid.Empty && subentry.Guid != NetworkManager.ActiveVesselGuid 
-                    && !mEntries.ContainsValue(subentry)) {
+                if (
+                    subentry.Guid != Guid.Empty
+                    && subentry.Guid != NetworkManager.ActiveVesselGuid
+                    && !mEntries.ContainsValue(subentry)
+                )
+                {
                     // List<T> iterator is invalidated by modifications, so do all deletions later
                     vesselList.Add(subentry);
-                } else {
+                }
+                else
+                {
                     RemoveVessels(subentry);
                 }
             }
             // Do deletions without relying on an iterator for root.SubEntries
-            foreach (Entry vessel in vesselList) {
+            foreach (Entry vessel in vesselList)
+            {
                 root.SubEntries.Remove(vessel);
             }
         }

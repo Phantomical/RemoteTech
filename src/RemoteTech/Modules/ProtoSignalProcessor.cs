@@ -5,7 +5,10 @@ namespace RemoteTech.Modules
 {
     public class ProtoSignalProcessor : ISignalProcessor
     {
-        public string Name { get { return $"ProtoSignalProcessor({VesselName})"; } }
+        public string Name
+        {
+            get { return $"ProtoSignalProcessor({VesselName})"; }
+        }
         public bool Visible => MapViewFiltering.CheckAgainstFilter(Vessel);
         public CelestialBody Body => Vessel.mainBody;
         public Vector3 Position => Vessel.GetWorldPos3D();
@@ -27,7 +30,9 @@ namespace RemoteTech.Modules
         {
             Vessel = v;
             Powered = ppms.GetBool("IsRTPowered");
-            CanRelaySignal = RTSettings.Instance.SignalRelayEnabled? (ppms.HasValue("AllowSignalRelay")? ppms.GetBool("AllowSignalRelay") : true) : true;
+            CanRelaySignal = RTSettings.Instance.SignalRelayEnabled
+                ? (ppms.HasValue("AllowSignalRelay") ? ppms.GetBool("AllowSignalRelay") : true)
+                : true;
 
             // get the crew count from the vessel
             var crewcount = v.GetVesselCrew().Count;
@@ -43,16 +48,25 @@ namespace RemoteTech.Modules
             if (ppms.GetInt("RTCommandMinCrew", out ppmsMinCrew))
             {
                 IsCommandStation = Powered && v.HasCommandStation() && crewcount >= ppmsMinCrew;
-                RTLog.Notify("ProtoSignalProcessor(Powered: {0}, HasCommandStation: {1}, Crew: {2}/{3})",
-                    Powered, v.HasCommandStation(), crewcount, ppmsMinCrew);
+                RTLog.Notify(
+                    "ProtoSignalProcessor(Powered: {0}, HasCommandStation: {1}, Crew: {2}/{3})",
+                    Powered,
+                    v.HasCommandStation(),
+                    crewcount,
+                    ppmsMinCrew
+                );
             }
             else
             {
                 // there was no RTCommandMinCrew member in the ProtoPartModuleSnapshot
                 IsCommandStation = false;
 
-                RTLog.Notify("ProtoSignalProcessor(Powered: {0}, HasCommandStation: {1}, Crew: {2})",
-                    Powered, v.HasCommandStation(), crewcount);
+                RTLog.Notify(
+                    "ProtoSignalProcessor(Powered: {0}, HasCommandStation: {1}, Crew: {2})",
+                    Powered,
+                    v.HasCommandStation(),
+                    crewcount
+                );
             }
         }
 

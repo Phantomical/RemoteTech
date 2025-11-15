@@ -18,14 +18,21 @@ namespace RemoteTech.SimpleTypes
 
         public bool Equals(NetworkLink<T> o)
         {
-            if (o == null) return false;
-            if (!Target.Equals(o.Target)) return false;
+            if (o == null)
+                return false;
+            if (!Target.Equals(o.Target))
+                return false;
             return true;
         }
 
         public override string ToString()
         {
-            return String.Format("NetworkLink(T: {0}, I: {1}, P: {2})", Target, Interfaces.ToDebugString(), Port);
+            return String.Format(
+                "NetworkLink(T: {0}, I: {1}, P: {2})",
+                Target,
+                Interfaces.ToDebugString(),
+                Port
+            );
         }
     }
 }

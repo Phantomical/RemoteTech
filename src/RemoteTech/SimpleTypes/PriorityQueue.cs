@@ -6,7 +6,10 @@ namespace RemoteTech.SimpleTypes
     // PriorityQueue based on a minimum-BinaryHeap.
     public class PriorityQueue<T> : IEnumerable<T>
     {
-        public int Count { get { return mHeap.Count; } }
+        public int Count
+        {
+            get { return mHeap.Count; }
+        }
 
         private readonly BinaryHeap<T> mHeap;
 

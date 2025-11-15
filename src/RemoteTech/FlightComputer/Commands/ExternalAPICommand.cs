@@ -7,28 +7,41 @@ namespace RemoteTech.FlightComputer.Commands
     {
         /// <summary>original ConfigNode object passed from the api</summary>
         private ConfigNode externalData;
+
         /// <summary>Name of the mod who passed this command</summary>
         private string Executor;
+
         /// <summary>Label for this command on the queue</summary>
         private string QueueLabel;
+
         /// <summary>Label for this command if its active</summary>
         private string ActiveLabel;
+
         /// <summary>Label for alert on no power</summary>
         private string ShortLabel;
+
         /// <summary>The ReflectionType for the methods to invoke</summary>
         private string ReflectionType;
+
         /// <summary>Name of the Pop-method on the ReflectionType</summary>
         private string ReflectionPopMethod = "";
+
         /// <summary>Name of the Execution-method on the ReflectionType</summary>
         private string ReflectionExecuteMethod = "";
+
         /// <summary>Name of the Abort-method on the ReflectionType</summary>
         private string ReflectionAbortMethod = "";
+
         /// <summary>GUID of the vessel</summary>
         private string GUIDString;
+
         /// <summary>true - when this command will be aborted</summary>
         private bool AbortCommand = false;
 
-        public override int Priority { get { return 0; } }
+        public override int Priority
+        {
+            get { return 0; }
+        }
 
         /// <summary>
         /// Returns the <see cref="QueueLabel"/> of this command on the queue and the
@@ -41,7 +54,7 @@ namespace RemoteTech.FlightComputer.Commands
             {
                 var desc = (this.QueueLabel == "") ? this.Executor : this.QueueLabel;
 
-                if(this.Delay <= 0 && this.ExtraDelay <= 0)
+                if (this.Delay <= 0 && this.ExtraDelay <= 0)
                     desc = (this.ActiveLabel == "") ? this.Executor : this.ActiveLabel;
 
                 return desc + Environment.NewLine + base.Description;
@@ -73,7 +86,8 @@ namespace RemoteTech.FlightComputer.Commands
                 moveToActive = (bool)this.callReflectionMember(this.ReflectionPopMethod);
 
                 // set moveToActive to false if we've no Execute-method.
-                if (this.ReflectionExecuteMethod == "") moveToActive = false;
+                if (this.ReflectionExecuteMethod == "")
+                    moveToActive = false;
             }
 
             return moveToActive;
@@ -115,7 +129,7 @@ namespace RemoteTech.FlightComputer.Commands
 
         /// <summary>
         /// Aborts the active external command and invokes the
-        /// <see cref="ReflectionAbortMethod"/> on the <see cref="ReflectionType"/>. 
+        /// <see cref="ReflectionAbortMethod"/> on the <see cref="ReflectionType"/>.
         /// </summary>
         public override void Abort()
         {
@@ -134,9 +148,9 @@ namespace RemoteTech.FlightComputer.Commands
         /// <returns>Configured ExternalAPICommand</returns>
         public static ExternalAPICommand FromExternal(ConfigNode externalData)
         {
-            ExternalAPICommand command =  new ExternalAPICommand();
+            ExternalAPICommand command = new ExternalAPICommand();
             command.TimeStamp = RTUtil.GameTime;
-            command.ConfigNodeToObject(command,externalData);
+            command.ConfigNodeToObject(command, externalData);
 
             return command;
         }
@@ -194,7 +208,7 @@ namespace RemoteTech.FlightComputer.Commands
         {
             try
             {
-                if(base.Load(node, computer))
+                if (base.Load(node, computer))
                 {
                     if (node.HasNode("ExternalData"))
                     {
@@ -205,9 +219,15 @@ namespace RemoteTech.FlightComputer.Commands
                     }
                 }
             }
-            catch(Exception)
+            catch (Exception)
             {
-                RTUtil.ScreenMessage(string.Format("Mod '{0}' not found. Queued command '{1}' will be removed.", this.Executor, this.ShortName));
+                RTUtil.ScreenMessage(
+                    string.Format(
+                        "Mod '{0}' not found. Queued command '{1}' will be removed.",
+                        this.Executor,
+                        this.ShortName
+                    )
+                );
             }
             return false;
         }
@@ -220,7 +240,7 @@ namespace RemoteTech.FlightComputer.Commands
         {
             ConfigNode externalData = new ConfigNode();
             this.externalData.CopyTo(externalData);
-            externalData.AddValue("AbortCommand",this.AbortCommand);
+            externalData.AddValue("AbortCommand", this.AbortCommand);
 
             return externalData;
         }
@@ -233,7 +253,13 @@ namespace RemoteTech.FlightComputer.Commands
         private object callReflectionMember(string reflectionMember)
         {
             Type externalType = this.getReflectionType(this.ReflectionType);
-            var result = externalType.InvokeMember(reflectionMember, BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static, null, null, new System.Object[] { this.prepareDataForExternalMod() });
+            var result = externalType.InvokeMember(
+                reflectionMember,
+                BindingFlags.InvokeMethod | BindingFlags.Public | BindingFlags.Static,
+                null,
+                null,
+                new System.Object[] { this.prepareDataForExternalMod() }
+            );
             return result;
         }
 
@@ -246,10 +272,10 @@ namespace RemoteTech.FlightComputer.Commands
         private Type getReflectionType(string reflectionType)
         {
             Type type = Type.GetType(reflectionType);
-            if (type == null) throw new NullReferenceException();
+            if (type == null)
+                throw new NullReferenceException();
 
             return type;
         }
-        
     }
 }

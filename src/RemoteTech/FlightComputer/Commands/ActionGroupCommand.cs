@@ -4,26 +4,36 @@ namespace RemoteTech.FlightComputer.Commands
 {
     public class ActionGroupCommand : AbstractCommand
     {
-        [Persistent] public KSPActionGroup ActionGroup;
+        [Persistent]
+        public KSPActionGroup ActionGroup;
 
         public override string Description
         {
             get { return ShortName + Environment.NewLine + base.Description; }
         }
-        public override string ShortName { get { return "Toggle Action Group " + ActionGroup; } }
+        public override string ShortName
+        {
+            get { return "Toggle Action Group " + ActionGroup; }
+        }
 
         public override bool Pop(FlightComputer f)
         {
             f.Vessel.ActionGroups.ToggleGroup(ActionGroup);
-            if (ActionGroup == KSPActionGroup.Stage && !(f.Vessel == FlightGlobals.ActiveVessel && FlightInputHandler.fetch.stageLock))
+            if (
+                ActionGroup == KSPActionGroup.Stage
+                && !(f.Vessel == FlightGlobals.ActiveVessel && FlightInputHandler.fetch.stageLock)
+            )
             {
                 try
                 {
                     KSP.UI.Screens.StageManager.ActivateNextStage();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    RTLog.Notify("Exception during ActivateNextStage(): " + ex.Message, RTLogLevel.LVL4);
+                    RTLog.Notify(
+                        "Exception during ActivateNextStage(): " + ex.Message,
+                        RTLogLevel.LVL4
+                    );
                 }
                 KSP.UI.Screens.ResourceDisplay.Instance.Refresh();
             }
@@ -37,11 +47,7 @@ namespace RemoteTech.FlightComputer.Commands
 
         public static ActionGroupCommand WithGroup(KSPActionGroup group)
         {
-            return new ActionGroupCommand()
-            {
-                ActionGroup = group,
-                TimeStamp = RTUtil.GameTime,
-            };
+            return new ActionGroupCommand() { ActionGroup = group, TimeStamp = RTUtil.GameTime };
         }
     }
 }
