@@ -15,5 +15,9 @@
   <ItemGroup>
     <PackageReference Include="KSPBuildTools" Version="0.0.4" />
 
+    <Reference Include="$(KSPRoot)/GameData/000_KSPBurst/Plugins/Unity.*.dll">
+      <Private>false</Private>
+      <KSPAssemblyName>KSPBurst</KSPAssemblyName>
+    </Reference>
   </ItemGroup>
 </Project>
