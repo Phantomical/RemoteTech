@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using RemoteTech.Modules;
 using RemoteTech.SimpleTypes;
+using Smooth.Collections;
 
 namespace RemoteTech.RangeModel
 {
@@ -55,10 +57,10 @@ namespace RemoteTech.RangeModel
         public static NetworkLink<ISatellite> GetLink(ISatellite satA, ISatellite satB, 
             Func<double, double, double> rangeFunc) {
             // Which antennas on either craft are capable of communication?
-            IEnumerable<IAntenna>  omnisA = GetOmnis(satA);
-            IEnumerable<IAntenna>  omnisB = GetOmnis(satB);
-            IEnumerable<IAntenna> dishesA = GetDishesThatSee(satA, satB);
-            IEnumerable<IAntenna> dishesB = GetDishesThatSee(satB, satA);
+            List<IAntenna>  omnisA = GetOmnis(satA);
+            List<IAntenna>  omnisB = GetOmnis(satB);
+            List<IAntenna> dishesA = GetDishesThatSee(satA, satB);
+            List<IAntenna> dishesB = GetDishesThatSee(satB, satA);
 
             // Pick the best range for each case
             double maxOmniA =  omnisA.Any() ?  omnisA.Max(ant => ant.Omni) : 0.0;
@@ -71,30 +73,60 @@ namespace RemoteTech.RangeModel
 
             double distance = satA.DistanceTo(satB);
 
+            List<IAntenna> As = new(omnisA.Count + dishesA.Count);
+            List<IAntenna> Bs = new(omnisB.Count + dishesB.Count);
+
             // Which antennas have the range to reach at least one antenna on the other satellite??
-            omnisA = omnisA.Where(ant => 
-                   CheckRange(rangeFunc, ant.Omni + bonusA, omniClamp, maxOmniB + bonusB, omniClamp) >= distance
-                || CheckRange(rangeFunc, ant.Omni + bonusA, omniClamp, maxDishB         , dishClamp) >= distance);
-            dishesA = dishesA.Where(ant => 
-                   CheckRange(rangeFunc, ant.Dish         , dishClamp, maxOmniB + bonusB, omniClamp) >= distance 
-                || CheckRange(rangeFunc, ant.Dish         , dishClamp, maxDishB         , dishClamp) >= distance);
-            omnisB = omnisB.Where(ant => 
-                   CheckRange(rangeFunc, ant.Omni + bonusB, omniClamp, maxOmniA + bonusA, omniClamp) >= distance
-                || CheckRange(rangeFunc, ant.Omni + bonusB, omniClamp, maxDishA         , dishClamp) >= distance);
-            dishesB = dishesB.Where(ant => 
-                   CheckRange(rangeFunc, ant.Dish         , dishClamp, maxOmniA + bonusA, omniClamp) >= distance 
-                || CheckRange(rangeFunc, ant.Dish         , dishClamp, maxDishA         , dishClamp) >= distance);
+            foreach (var ant in omnisA)
+            {
+                if (CheckRange(rangeFunc, ant.Omni + bonusA, omniClamp, maxOmniB + bonusB, omniClamp) >= distance
+                  || CheckRange(rangeFunc, ant.Omni + bonusA, omniClamp, maxDishB, dishClamp) >= distance)
+                    As.Add(ant);
+            }
+
+            foreach (var ant in dishesA)
+            {
+                if (CheckRange(rangeFunc, ant.Dish, dishClamp, maxOmniB + bonusB, omniClamp) >= distance
+                  || CheckRange(rangeFunc, ant.Dish, dishClamp, maxDishB, dishClamp) >= distance)
+                    As.Add(ant);
+            }
+
+            foreach (var ant in omnisB)
+            {
+                if (CheckRange(rangeFunc, ant.Omni + bonusB, omniClamp, maxOmniA + bonusA, omniClamp) >= distance
+                  || CheckRange(rangeFunc, ant.Omni + bonusB, omniClamp, maxDishA, dishClamp) >= distance)
+                    Bs.Add(ant);
+            }
+            
+            foreach (var ant in dishesB)
+            {
+                if (CheckRange(rangeFunc, ant.Dish, dishClamp, maxOmniA + bonusA, omniClamp) >= distance
+                  || CheckRange(rangeFunc, ant.Dish, dishClamp, maxDishA, dishClamp) >= distance)
+                    Bs.Add(ant);
+            }
+
+            // Which antennas have the range to reach at least one antenna on the other satellite??
+            // omnisA.RemoveAll(ant => !(
+            //        CheckRange(rangeFunc, ant.Omni + bonusA, omniClamp, maxOmniB + bonusB, omniClamp) >= distance
+            //     || CheckRange(rangeFunc, ant.Omni + bonusA, omniClamp, maxDishB         , dishClamp) >= distance).ToList();
+            // dishesA = dishesA.Where(ant => 
+            //        CheckRange(rangeFunc, ant.Dish         , dishClamp, maxOmniB + bonusB, omniClamp) >= distance 
+            //     || CheckRange(rangeFunc, ant.Dish         , dishClamp, maxDishB         , dishClamp) >= distance).ToList();
+            // omnisB = omnisB.Where(ant => 
+            //        CheckRange(rangeFunc, ant.Omni + bonusB, omniClamp, maxOmniA + bonusA, omniClamp) >= distance
+            //     || CheckRange(rangeFunc, ant.Omni + bonusB, omniClamp, maxDishA         , dishClamp) >= distance).ToList();
+            // dishesB = dishesB.Where(ant => 
+            //        CheckRange(rangeFunc, ant.Dish         , dishClamp, maxOmniA + bonusA, omniClamp) >= distance 
+            //     || CheckRange(rangeFunc, ant.Dish         , dishClamp, maxDishA         , dishClamp) >= distance).ToList();
 
             // Just because an antenna is in `omnisA.Concat(dishesA)` doesn't mean it can connect to *any*
             //  antenna in `omnisB.Concat(dishesB)`, and vice versa. Pick the max to be safe.
-            IAntenna selectedAntennaA = omnisA.Concat(dishesA)
-                .OrderByDescending(ant => Math.Max(ant.Omni, ant.Dish)).FirstOrDefault();
-            IAntenna selectedAntennaB = omnisB.Concat(dishesB)
-                .OrderByDescending(ant => Math.Max(ant.Omni, ant.Dish)).FirstOrDefault();
+            IAntenna selectedAntennaA = GetMaxBy(As, AntennaComparer.Instance);
+            IAntenna selectedAntennaB = GetMaxBy(Bs, AntennaComparer.Instance);
 
             if (selectedAntennaA != null && selectedAntennaB != null)
             {
-                List<IAntenna> interfaces = omnisA.Concat(dishesA).ToList();
+                List<IAntenna> interfaces = As;
 
                 LinkType type = (dishesA.Contains(selectedAntennaA) || dishesB.Contains(selectedAntennaB) 
                     ? LinkType.Dish : LinkType.Omni);
@@ -132,9 +164,24 @@ namespace RemoteTech.RangeModel
 
         /// <summary>Returns all omnidirectional antennas on a satellite.</summary>
         /// <returns>A possibly empty collection of omnis.</returns>
-        private static IEnumerable<IAntenna> GetOmnis(ISatellite sat)
+        private static List<IAntenna> GetOmnis(ISatellite sat)
         {
-            return sat.Antennas.Where(a => a.Omni > 0);
+            List<IAntenna> result = [.. sat.Antennas];
+            int i = 0;
+            int j = 0;
+            int count = result.Count;
+
+            for (; i < count; ++i)
+            {
+                var a = result[i];
+                if (a.Omni > 0.0)
+                    continue;
+
+                result[j++] = a;
+            }
+
+            result.RemoveRange(j, count - j);
+            return result;
         }
 
         /// <summary>Returns all dishes on a satellite that are pointed, directly or indirectly, 
@@ -142,10 +189,62 @@ namespace RemoteTech.RangeModel
         /// <returns>A possibly empty collection of dishes.</returns>
         /// <param name="sat">The satellite whose dishes are being queried.</param>
         /// <param name="target">The target to be contacted.</param>
-        private static IEnumerable<IAntenna> GetDishesThatSee(ISatellite sat, ISatellite target)
+        private static List<IAntenna> GetDishesThatSee(ISatellite sat, ISatellite target)
         {
-            return sat.Antennas.Where(a => a.Dish > 0 
-                && (a.IsTargetingDirectly(target) || a.IsTargetingActiveVessel(target) || a.IsInFieldOfView(target, sat)));
+
+            List<IAntenna> result = [.. sat.Antennas];
+            int i = 0;
+            int j = 0;
+            int count = result.Count;
+
+            for (; i < count; ++i)
+            {
+                var a = result[i];
+                if (a.Dish <= 0.0)
+                    continue;
+                if (!a.IsTargetingDirectly(target))
+                    continue;
+                if (!a.IsTargetingActiveVessel(target))
+                    continue;
+                if (!a.IsInFieldOfView(target, sat))
+                    continue;
+
+                result[j++] = a;
+            }
+
+            result.RemoveRange(j, count - j);
+            return result;
+        }
+    
+        private static IAntenna GetMaxBy(List<IAntenna> antennas, AntennaComparer comparer)
+        {
+            var enumerator = antennas.GetEnumerator();
+            if (!enumerator.MoveNext())
+                return null;
+
+            var max = enumerator.Current;
+            while (enumerator.MoveNext())
+            {
+                var current = enumerator.Current;
+                if (comparer.Compare(max, current) > 0)
+                    max = current;
+            }
+
+            return max;
+        }
+
+        private class AntennaComparer : IComparer<IAntenna>
+        {
+            public static AntennaComparer Instance = new();
+
+            public int Compare(IAntenna x, IAntenna y)
+            {
+                var dx = Math.Min(x.Dish, x.Omni);
+                var dy = Math.Min(y.Dish, y.Omni);
+
+                return dx.CompareTo(dy);
+            }
+
         }
     }
 }

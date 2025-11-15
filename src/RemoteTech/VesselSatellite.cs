@@ -66,7 +66,13 @@ namespace RemoteTech
         {
             get
             {
-                return SignalProcessors.FirstOrDefault(s => s.FlightComputer != null) ?? SignalProcessors[0];
+                foreach (var s in SignalProcessors)
+                {
+                    if (s.FlightComputer is not null)
+                        return s;
+                }
+
+                return SignalProcessors[0];
             }
         }
 
