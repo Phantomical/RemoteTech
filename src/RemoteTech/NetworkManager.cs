@@ -229,6 +229,26 @@ namespace RemoteTech
             mTickIndex = mTickIndex % RTCore.Instance.Satellites.Count;
         }
 
+        private bool mPhysicsUpdateActive = false;
+
+        private IEnumerator PhysicsUpdateAsync()
+        {
+            yield break;
+        }
+
+        readonly struct UpdateInProgressGuard : IDisposable
+        {
+            readonly NetworkManager manager;
+
+            public UpdateInProgressGuard(NetworkManager manager)
+            {
+                this.manager = manager;
+                manager.mPhysicsUpdateActive = true;
+            }
+
+            public void Dispose() => manager.mPhysicsUpdateActive = false;
+        }
+
         private void OnSatelliteUnregister(ISatellite s)
         {
             RTLog.Notify("NetworkManager: SatelliteUnregister({0})", s);

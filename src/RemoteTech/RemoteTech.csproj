@@ -6,6 +6,7 @@
 
     <TargetFramework>net4.8</TargetFramework>
     <LangVersion>13</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 
     <BinariesOutputRelativePath>GameData\RemoteTech</BinariesOutputRelativePath>
     <KSPBT_GenerateKSPAssemblyAttribute>true</KSPBT_GenerateKSPAssemblyAttribute>

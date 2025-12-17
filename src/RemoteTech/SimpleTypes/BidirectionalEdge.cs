@@ -2,7 +2,7 @@
 
 namespace RemoteTech.SimpleTypes
 {
-    public enum LinkType
+    public enum LinkType : byte
     {
         None,
         Dish,
